@@ -1,0 +1,2101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bizmo Chemicals | Cleaner Home • Safer Life</title>
+    <meta name="description" content="Bizmo Chemicals - powerful cleaning products for a cleaner home and safer life.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <body>
+
+    <header class="header">
+      <div class="container nav">
+
+        <a class="logo-link" href="#home">
+          <img src="assets/logo.png" alt="Bizmo Chemicals">
+        </a>
+
+        <nav id="navMenu">
+          <a href="#home">Home</a>
+          <a href="#shop">Shop</a>
+          <a href="#categories">Categories</a>
+          <a href="#combos">Combos</a>
+          <a href="#bulk">Bulk Orders</a>
+          <a href="#about">About Us</a>
+          <a href="#faq">FAQs</a>
+          <a href="#contact">Contact</a>
+        </nav>
+
+        <div class="nav-actions">
+          <button type="button" title="Search" onclick="focusSearch()">⌕</button>
+
+          <button type="button" title="Cart" onclick="openCart()">
+            🛒 <b id="cartCount">0</b>
+          </button>
+
+          <button
+            class="mobile-menu"
+            type="button"
+            onclick="toggleMenu()"
+            aria-label="Open menu"
+          >
+            ☰
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <main id="home">
+
+      <!-- HERO -->
+      <section class="hero" id="heroBanner">
+
+        <div class="hero-slides">
+
+          <div class="hero-slide active">
+            <img
+              src="assets/hero.jpg"
+              alt="Bizmo Chemicals Cleaning Products"
+            >
+          </div>
+
+          <div class="hero-slide">
+            <img
+              src="assets/hero1.jpg"
+              alt="Bizmo Chemicals Products"
+            >
+          </div>
+
+          <div class="hero-slide">
+            <img
+              src="assets/hero2.jpg"
+              alt="Bizmo Chemicals Cleaning Range"
+            >
+          </div>
+
+        </div>
+
+        <div class="hero-overlay"></div>
+
+        <div class="container hero-content">
+
+          <div class="hero-copy">
+
+            <div class="eyebrow">BIZMO CHEMICALS</div>
+
+            <h1>
+              Cleaner Home. <br>
+              <span>Safer Life.</span>
+            </h1>
+
+            <p>
+              Powerful cleaning solutions made for modern homes,
+              businesses and everyday life.
+            </p>
+
+            <div class="hero-points">
+              <span>✓ Powerful Cleaning</span>
+              <span>✓ Kills 99.9% Germs</span>
+              <span>✓ Fresh Fragrance</span>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="hero-dots">
+          <button
+            type="button"
+            class="hero-dot active"
+            onclick="goToHeroSlide(0)"
+          ></button>
+
+          <button
+            type="button"
+            class="hero-dot"
+            onclick="goToHeroSlide(1)"
+          ></button>
+
+          <button
+            type="button"
+            class="hero-dot"
+            onclick="goToHeroSlide(2)"
+          ></button>
+        </div>
+
+      </section>
+
+      <!-- TRUST STRIP -->
+      <section class="trust-strip">
+
+        <div class="container trust-grid">
+
+          <div>
+            <span class="trust-icon">🛡</span>
+            <div>
+              <strong>Safe & Effective</strong>
+              <small>Quality you can trust</small>
+            </div>
+          </div>
+
+          <div>
+            <span class="trust-icon">✦</span>
+            <div>
+              <strong>Powerful Cleaning</strong>
+              <small>Made for tough cleaning</small>
+            </div>
+          </div>
+
+          <div>
+            <span class="trust-icon">🌿</span>
+            <div>
+              <strong>Fresh Fragrance</strong>
+              <small>Freshness in every clean</small>
+            </div>
+          </div>
+
+          <div>
+            <span class="trust-icon">🏠</span>
+            <div>
+              <strong>For Every Home</strong>
+              <small>Daily cleaning essentials</small>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- RUNNING BANNER -->
+      <div class="bizmo-running-banner">
+
+        <div class="bizmo-running-track">
+
+          <span>POWERFUL CLEANING</span>
+          <span>•</span>
+          <span>FRESH FRAGRANCE</span>
+          <span>•</span>
+          <span>EVERYDAY CARE</span>
+          <span>•</span>
+          <span>MADE FOR EVERY HOME</span>
+          <span>•</span>
+          <span>QUALITY CLEANING PRODUCTS</span>
+          <span>•</span>
+
+          <span>POWERFUL CLEANING</span>
+          <span>•</span>
+          <span>FRESH FRAGRANCE</span>
+          <span>•</span>
+          <span>EVERYDAY CARE</span>
+          <span>•</span>
+          <span>MADE FOR EVERY HOME</span>
+          <span>•</span>
+          <span>QUALITY CLEANING PRODUCTS</span>
+          <span>•</span>
+
+        </div>
+
+      </div>
+
+      <!-- CATEGORIES -->
+      <section class="section categories" id="categories">
+
+        <div class="container">
+
+          <div class="section-head">
+
+            <div>
+              <span class="kicker">EXPLORE OUR RANGE</span>
+              <h2>Shop by Category</h2>
+            </div>
+
+          </div>
+
+          <div class="category-pills">
+
+            <button
+              type="button"
+              class="category-pill all category-selected"
+              data-category="all"
+              onclick="showAllProducts()"
+            >
+              <span>✦</span>
+              <strong>All</strong>
+            </button>
+
+            <button
+              type="button"
+              class="category-pill home"
+              data-category="home"
+              onclick="filterCategory('home')"
+            >
+              <span>🏠</span>
+              <strong>Home</strong>
+            </button>
+
+            <button
+              type="button"
+              class="category-pill kitchen"
+              data-category="kitchen"
+              onclick="filterCategory('kitchen')"
+            >
+              <span>🍳</span>
+              <strong>Kitchen</strong>
+            </button>
+
+            <button
+              type="button"
+              class="category-pill surface"
+              data-category="surface"
+              onclick="filterCategory('surface')"
+            >
+              <span>✨</span>
+              <strong>Surface</strong>
+            </button>
+
+            <button
+              type="button"
+              class="category-pill personal"
+              data-category="personal"
+              onclick="filterCategory('personal')"
+            >
+              <span>🧴</span>
+              <strong>Personal</strong>
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- PRODUCTS -->
+      <section class="section products" id="shop">
+
+        <div class="view-switcher">
+
+          <span>View:</span>
+
+          <button
+            type="button"
+            onclick="setProductView(1)"
+            id="viewOne"
+            class="active"
+          >
+            ▦ 1
+          </button>
+
+          <button
+            type="button"
+            onclick="setProductView(2)"
+            id="viewTwo"
+          >
+            ▦ 2
+          </button>
+
+        </div>
+
+        <div class="container">
+
+          <div class="section-head centered">
+
+            <div>
+              <span class="kicker">OUR MOST LOVED</span>
+              <h2>Best Sellers</h2>
+            </div>
+
+            <div class="search-wrap">
+              <input
+                id="search"
+                type="search"
+                placeholder="Search products..."
+                oninput="filterProducts()"
+                aria-label="Search products"
+              >
+            </div>
+
+          </div>
+
+          <div class="product-grid" id="productGrid">
+
+            <!-- HANDWASH -->
+            <article class="product-card" data-name="Handwash">
+
+              <div class="product-image">
+
+                <span class="pill red">KILLS 99.9% GERMS</span>
+
+                <div class="handwash-slider">
+
+                  <div class="handwash-track">
+
+                    <div class="handwash-slide">
+                      <img
+                        src="assets/Handwash1.png"
+                        alt="Bizmo Green Handwash"
+                      >
+                    </div>
+
+                    <div class="handwash-slide">
+                      <img
+                        src="assets/Handwash.png"
+                        alt="Bizmo Pink Handwash"
+                      >
+                    </div>
+
+                    <div class="handwash-slide">
+                      <img
+                        src="assets/Handwash2.png"
+                        alt="Bizmo Red Handwash"
+                      >
+                    </div>
+
+                    <div class="handwash-slide">
+                      <img
+                        src="assets/Handwash3.png"
+                        alt="Bizmo Blue Handwash"
+                      >
+                    </div>
+
+                  </div>
+
+                  <div class="handwash-dots">
+                    <span class="handwash-dot active"></span>
+                    <span class="handwash-dot"></span>
+                    <span class="handwash-dot"></span>
+                    <span class="handwash-dot"></span>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div class="product-info">
+
+                <span class="category-label">Personal Care</span>
+
+                <h3>Handwash</h3>
+
+                <p class="product-description">
+                  Gentle hands with a fresh fragrance.
+                </p>
+
+                <div class="price-row">
+                  <strong>From ₹100 ✦</strong>
+                  <del>₹150</del>
+                </div>
+
+                <button
+                  type="button"
+                  onclick="openProductOptions('Handwash')"
+                >
+                  Add to Cart
+                </button>
+
+              </div>
+
+            </article>
+
+            <!-- DISH WASH -->
+            <article
+              class="product-card"
+              data-name="Dish Wash Liquid"
+            >
+
+              <div class="product-image">
+
+                <span class="pill yellow">FRESH</span>
+
+                <img
+                  src="assets/dish-wash.png"
+                  alt="Bizmo Dish Wash Liquid"
+                >
+
+              </div>
+
+              <div class="product-info">
+
+                <span class="category-label">Kitchen Care</span>
+
+                <h3>Dish Wash Liquid</h3>
+
+                <p class="product-description">
+                  Powerful cleaning with rich freshness.
+                </p>
+
+                <div class="price-row">
+                  <strong>From ₹50 ✦</strong>
+                  <del>₹100</del>
+                </div>
+
+                <button
+                  onclick="openProductOptions('Dish Wash Liquid')"
+                >
+                  Add to Cart
+                </button>
+
+              </div>
+
+            </article>
+
+            <!-- WASHING LIQUID -->
+            <article
+              class="product-card"
+              data-name="Washing Liquid"
+            >
+
+              <div class="product-image">
+
+                <span class="pill blue">POWER GEL</span>
+
+                <img
+                  src="assets/washing-liquid.png"
+                  alt="Bizmo Washing Liquid"
+                >
+
+              </div>
+
+              <div class="product-info">
+
+                <span class="category-label">Laundry Care</span>
+
+                <h3>Washing Liquid</h3>
+
+                <p class="product-description">
+                  Machine-compatible stain cleaning.
+                </p>
+
+                <div class="price-row">
+                  <strong>From ₹115 ✦</strong>
+                  <del>₹160</del>
+                </div>
+
+                <button
+                  onclick="openProductOptions('Washing Liquid')"
+                >
+                  Add to Cart
+                </button>
+
+              </div>
+
+            </article>
+
+            <!-- FABRIC CONDITIONER -->
+            <article
+              class="product-card"
+              data-name="Fabric Conditioner"
+            >
+
+              <div class="product-image">
+
+                <span class="pill purple">ALL DAY FRAGRANCE</span>
+
+                <img
+                  src="assets/fabric-conditioner.png"
+                  alt="Bizmo Fabric Conditioner"
+                >
+
+              </div>
+
+              <div class="product-info">
+
+                <span class="category-label">Laundry Care</span>
+
+                <h3>Fabric Conditioner</h3>
+
+                <p class="product-description">
+                  Fabrics with a long-lasting fragrance.
+                </p>
+
+                <div class="price-row">
+                  <strong>From ₹100 ✦</strong>
+                  <del>₹140</del>
+                </div>
+
+                <button
+                  onclick="openProductOptions('Fabric Conditioner')"
+                >
+                  Add to Cart
+                </button>
+
+              </div>
+
+            </article>
+<!-- ROOM SPRAY -->
+            <article
+              class="product-card"
+              data-name="Room Spray"
+            >
+
+              <div class="product-image">
+
+                <span class="pill purple">ALL NEW</span>
+
+                <img
+                  src="assets/room-spray.png"
+                  alt="Bizmo Room Spray"
+                  onerror="this.style.display='none'"
+                >
+
+                <span class="image-fallback">🌸</span>
+
+              </div>
+
+              <div class="product-info">
+
+                <span class="category-label">Home Care</span>
+
+                <h3>Room Spray</h3>
+
+                <p class="product-description">
+                  Fresh fragrance for everyday spaces.
+                </p>
+
+                <div class="price-row">
+                  <strong>From ₹100 ✦</strong>
+                  <del>₹130</del>
+                </div>
+
+                <button
+                  onclick="openProductOptions('Room Spray')"
+                >
+                  Add to Cart
+                </button>
+
+              </div>
+
+            </article>
+
+            <!-- GLASS CLEANER -->
+            <article
+              class="product-card"
+              data-name="Glass Cleaner"
+            >
+
+              <div class="product-image">
+
+                <span class="pill cyan">REFLECTION</span>
+
+                <img
+                  src="assets/glass-cleaner.png"
+                  alt="Bizmo Glass Cleaner"
+                >
+
+              </div>
+
+              <div class="product-info">
+
+                <span class="category-label">Surface Care</span>
+
+                <h3>Glass Cleaner</h3>
+
+                <p class="product-description">
+                  Crystal clear, streak-free shine.
+                </p>
+
+                <div class="price-row">
+                  <strong>From ₹90 ✦</strong>
+                  <del>₹120</del>
+                </div>
+
+                <button
+                  onclick="openProductOptions('Glass Cleaner')"
+                >
+                  Add to Cart
+                </button>
+
+              </div>
+
+            </article>
+            
+            <!-- FLOOR CLEANER -->
+            <article
+              class="product-card"
+              data-name="Floor Cleaner"
+            >
+
+              <div class="product-image">
+
+                <span class="pill pink">10X CLEAN</span>
+
+                <div class="handwash-slider">
+
+                  <div class="handwash-track">
+
+                    <div class="handwash-slide">
+                      <img
+                        src="assets/floor-cleaner.png"
+                        alt="Bizmo Lemon Floor Cleaner"
+                      >
+                    </div>
+
+                    <div class="handwash-slide">
+                      <img
+                        src="assets/floor-cleaner1.png"
+                        alt="Bizmo Rose Floor Cleaner"
+                      >
+                    </div>
+
+                  </div>
+
+                  <div class="handwash-dots">
+                    <span class="handwash-dot active"></span>
+                    <span class="handwash-dot"></span>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div class="product-info">
+
+                <span class="category-label">Surface Care</span>
+
+                <h3>Floor Cleaner</h3>
+
+                <p class="product-description">
+                  Fast shine and fresh fragrance.
+                </p>
+
+                <div class="price-row">
+                  <strong>From ₹89 ✦</strong>
+                  <del>₹120</del>
+                </div>
+
+                <button
+                  onclick="openProductOptions('Floor Cleaner')"
+                >
+                  Add to Cart
+                </button>
+
+              </div>
+
+            </article>
+
+
+            <!-- PHENYL -->
+            <article
+              class="product-card"
+              data-name="Phenyl"
+            >
+
+              <div class="product-image">
+
+                <span class="pill">MULTI-PURPOSE</span>
+
+                <img
+                  src="assets/phenyl.png"
+                  alt="Bizmo Phenyl"
+                  onerror="this.style.display='none'"
+                >
+
+                <span class="image-fallback">🧴</span>
+
+              </div>
+
+              <div class="product-info">
+
+                <span class="category-label">Home Care</span>
+
+                <h3>Phenyl</h3>
+
+                <p class="product-description">
+                  Phenyl for everyday cleaning.
+                </p>
+
+                <div class="price-row">
+                  <strong>From ₹45 ✦</strong>
+                  <del>₹450</del>
+                </div>
+
+                <button
+                  type="button"
+                  onclick="openProductOptions('Phenyl')"
+                >
+                  Add to Cart
+                </button>
+
+              </div>
+
+            </article>
+
+            <!-- SOAP OIL -->
+            <article
+              class="product-card"
+              data-name="Soap Oil"
+            >
+
+              <div class="product-image">
+
+                <span class="pill yellow">CLEANING</span>
+
+                <img
+                  src="assets/soap-oil.png"
+                  alt="Bizmo Soap Oil"
+                  onerror="this.style.display='none'"
+                >
+
+                <span class="image-fallback">🧴</span>
+
+              </div>
+
+              <div class="product-info">
+
+                <span class="category-label">Home Care</span>
+
+                <h3>Soap Oil</h3>
+
+                <p class="product-description">
+                  Practical everyday cleaning solution.
+                </p>
+
+                <div class="price-row">
+                  <strong>From ₹70 ✦</strong>
+                  <del>₹100</del>
+                </div>
+
+                <button
+                  onclick="openProductOptions('Soap Oil')"
+                >
+                  Add to Cart
+                </button>
+
+              </div>
+
+            </article>
+
+            <!-- TILE SALT -->
+            <article
+              class="product-card"
+              data-name="Tile Salt"
+            >
+
+              <div class="product-image">
+
+                <span class="pill blue">SPARKLING</span>
+
+                <img
+                  src="assets/tile-salt.png"
+                  alt="Bizmo Tile Salt"
+                  onerror="this.style.display='none'"
+                >
+
+                <span class="image-fallback">✨</span>
+
+              </div>
+
+              <div class="product-info">
+
+                <span class="category-label">Surface Care</span>
+
+                <h3>Tile Salt</h3>
+
+                <p class="product-description">
+                  For tough tile and surface cleaning.
+                </p>
+
+                <div class="price-row">
+                  <strong>From ₹120 ✦</strong>
+                  <del>₹150</del>
+                </div>
+
+                <button
+                  onclick="openProductOptions('Tile Salt')"
+                >
+                  Add to Cart
+                </button>
+
+              </div>
+
+            </article>
+
+            
+
+            <!-- TOILET CLEANER -->
+            <article
+              class="product-card"
+              data-name="Toilet Cleaner"
+            >
+
+              <div class="product-image">
+
+                <span class="pill">BEST SELLER</span>
+
+                <img
+                  src="assets/toilet-cleaner.png"
+                  alt="Bizmo Toilet Cleaner"
+                >
+
+              </div>
+
+              <div class="product-info">
+
+                <span class="category-label">Home Care</span>
+
+                <h3>Toilet Cleaner</h3>
+
+                <p class="product-description">
+                  Deep cleaning & sparkling finish.
+                </p>
+
+                <div class="price-row">
+                  <strong>From ₹89 ✦</strong>
+                  <del>₹120</del>
+                </div>
+
+                <button
+                  onclick="openProductOptions('Toilet Cleaner')"
+                >
+                  Add to Cart
+                </button>
+
+              </div>
+
+            </article>
+          </div>
+
+        </div>
+
+      </section>
+      
+      <!-- PRODUCT BANNER -->
+      <div class="bizmo-product-banner">
+
+        <div class="bizmo-product-track">
+
+          <span>🧴 HANDWASH</span>
+          <span>•</span>
+          <span>🧽 DISH WASH</span>
+          <span>•</span>
+          <span>🧺 WASHING LIQUID</span>
+          <span>•</span>
+          <span>🧹 FLOOR CLEANER</span>
+          <span>•</span>
+          <span>🧴 ROOM SPRAY</span>
+          <span>•</span>
+          <span>✨ GLASS CLEANER</span>
+          <span>•</span>
+          <span>🚽 TOILET CLEANER</span>
+          <span>•</span>
+          <span>🧴 TILE SALT</span>
+          <span>•</span>
+          <span>🧽 SOAP OIL</span>
+          <span>•</span>
+          <span>🧺 FABRIC CONDITIONER</span>
+          <span>•</span>
+          <span>🧴 PHENYL</span>
+          <span>•</span>
+
+          <span>🧴 HANDWASH</span>
+          <span>•</span>
+          <span>🧽 DISH WASH</span>
+          <span>•</span>
+          <span>🧺 WASHING LIQUID</span>
+          <span>•</span>
+          <span>🧹 FLOOR CLEANER</span>
+          <span>•</span>
+          <span>🧴 ROOM SPRAY</span>
+          <span>•</span>
+          <span>✨ GLASS CLEANER</span>
+          <span>•</span>
+          <span>🚽 TOILET CLEANER</span>
+          <span>•</span>
+          <span>🧴 TILE SALT</span>
+          <span>•</span>
+          <span>🧽 SOAP OIL</span>
+          <span>•</span>
+          <span>🧺 FABRIC CONDITIONER</span>
+          <span>•</span>
+          <span>🧴 PHENYL</span>
+          <span>•</span>
+        </div>
+
+      </div>
+<!-- COMBO -->
+<section class="section combo" id="combos">
+
+  <div class="container">
+
+    <div class="section-head">
+      <span class="kicker">SWIPE FOR MORE</span>
+
+      <h2>365 Days • Combo Offers</h2>
+
+      <p>
+        Smart cleaning combos for every home, all year round.
+      </p>
+    </div>
+<div class="combo-slider-wrap">
+
+  <div class="combo-slider">
+
+    <!-- COMBO 1 -->
+    <div class="combo-card">
+
+      <img
+        src="assets/combo-pack.jpg"
+        alt="Bizmo Combo 1"
+      >
+
+      <div class="combo-copy">
+
+        <span class="kicker">COMBO 1</span>
+
+        <h2>Combo 1</h2>
+
+        <p>
+          Your everyday cleaning essentials in one convenient pack.
+        </p>
+
+        <div class="combo-price">
+          <del>MRP ₹---</del>
+          <strong>₹--- ✦</strong>
+        </div>
+
+        <p class="included">
+          <b>Combo Includes:</b>
+          Details coming soon
+        </p>
+
+        <button
+          class="combo-add-btn"
+          type="button"
+          data-combo="Combo 1"
+        >
+          Add to Cart
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- COMBO 2 -->
+    <div class="combo-card">
+
+      <img
+        src="assets/combo-pack1.jpg"
+        alt="Bizmo Combo 2"
+      >
+
+      <div class="combo-copy">
+
+        <span class="kicker">COMBO 2</span>
+
+        <h2>Combo 2</h2>
+
+        <p>
+          A specially selected combination for your cleaning needs.
+        </p>
+
+        <div class="combo-price">
+          <del>MRP ₹---</del>
+          <strong>₹--- ✦</strong>
+        </div>
+
+        <p class="included">
+          <b>Combo Includes:</b>
+          Details coming soon
+        </p>
+
+        <button
+          class="combo-add-btn"
+          type="button"
+          data-combo="Combo 2"
+        >
+          Add to Cart
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- COMBO 3 -->
+    <div class="combo-card">
+
+      <img
+        src="assets/combo-pack2.jpg"
+        alt="Bizmo Combo 3"
+      >
+
+      <div class="combo-copy">
+
+        <span class="kicker">COMBO 3</span>
+
+        <h2>Combo 3</h2>
+
+        <p>
+          A convenient combo designed for everyday home care.
+        </p>
+
+        <div class="combo-price">
+          <del>MRP ₹---</del>
+          <strong>₹--- ✦</strong>
+        </div>
+
+        <p class="included">
+          <b>Combo Includes:</b>
+          Details coming soon
+        </p>
+
+        <button
+          class="combo-add-btn"
+          type="button"
+          data-combo="Combo 3"
+        >
+          Add to Cart
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- FIXED COMBO DOTS -->
+  <div class="combo-dots">
+
+    <button
+      class="combo-dot active"
+      type="button"
+      aria-label="Go to Combo 1">
+    </button>
+
+    <button
+      class="combo-dot"
+      type="button"
+      aria-label="Go to Combo 2">
+    </button>
+
+    <button
+      class="combo-dot"
+      type="button"
+      aria-label="Go to Combo 3">
+    </button>
+
+  </div>
+
+</div>
+
+  </div>
+
+</section>
+
+
+      
+
+      
+
+   <!-- BULK ORDERS -->
+<section class="section split-feature" id="bulk">
+
+  <div class="container split-grid">
+
+    <div class="split-copy">
+
+      <span class="kicker">FOR HOMES & BUSINESSES</span>
+
+      <h2>
+        Wholesale Supply. <br>
+        Built for Every Need.
+      </h2>
+
+      <ul>
+    <div class="split-image">
+
+      <img
+        src="assets/bulk-5l.jpg"
+        alt="Bizmo 5L cleaning range"
+      >
+
+    </div>
+        <li>
+          ஸ்கூல்ஸ், ஹாஸ்பிட்டல்ஸ், காலேஜஸ் மற்றும் ஹோட்டல்
+          ரெசிடென்சிகளுக்கு நாங்கள் WHOLESALE ரேட்டில்
+          சப்ளை செய்து வருகிறோம்!
+        </li>
+
+        <li>
+          WHOLESALE ரேட்டில் தேவையுடையவர்கள் எங்களைத்
+          தொடர்பு கொள்ளுங்கள்!
+        </li>
+
+        <li>
+          எங்கள் சேவை பகுதிகள்:
+        </li>
+
+        <li>
+          📍 இளையான்குடி &nbsp; 📍 சிவகங்கை
+        </li>
+
+        <li>
+          📍 இராமநாதபுரம் &nbsp; 📍 இராமேஸ்வரம்
+        </li>
+
+        <li>
+          மற்றும் சுற்று வட்டாரப் பகுதிகள்.
+        </li>
+
+      </ul>
+
+      <a
+        class="primary-btn"
+        href="tel:8220025541"
+      >
+        Contact for Bulk Orders →
+      </a>
+
+    </div>
+
+
+
+
+  </div>
+
+</section>
+      <!-- ABOUT -->
+<section class="section about" id="about">
+
+  <div class="container about-grid">
+
+    <div class="about-copy">
+
+      <span class="kicker">WHY BIZMO</span>
+
+      <h2>
+        Cleaning made <br>
+        <span>simple & powerful.</span>
+      </h2>
+
+      <p>
+        Bizmo Chemicals brings together dependable cleaning
+        products for everyday homes and businesses. Our range
+        is designed around performance, freshness and value.
+      </p>
+
+      <div class="about-points">
+
+        <div>
+          <b>01</b>
+
+          <span>
+            <strong>Reliable Quality</strong>
+            <small>
+              Products made with care and consistency.
+            </small>
+          </span>
+        </div>
+
+
+        <div>
+          <b>02</b>
+
+          <span>
+            <strong>Everyday Value</strong>
+            <small>
+              Practical packs and prices for regular use.
+            </small>
+          </span>
+        </div>
+
+
+        <div>
+          <b>03</b>
+
+          <span>
+            <strong>Complete Range</strong>
+            <small>
+              Toilet, floor, glass, kitchen and laundry care.
+            </small>
+          </span>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="about-art">
+
+      <img
+        src="assets/logo.png"
+        alt="Bizmo logo"
+      >
+
+    </div>
+
+  </div>
+
+</section>
+      <!-- CUSTOMER REVIEWS -->
+<section class="section reviews-section" id="reviews">
+
+  <div class="container">
+
+    <div class="section-head reviews-head">
+      <span class="kicker">CUSTOMER REVIEWS</span>
+
+      <h2>
+        What Our Customers <br>
+        <span>Say.</span>
+      </h2>
+
+      <p>
+        A few words from customers who have experienced Bizmo products.
+      </p>
+    </div>
+
+    <div class="reviews-slider-wrap">
+
+      <button
+        class="review-arrow review-prev"
+        type="button"
+        aria-label="Previous review">
+        ←
+      </button>
+
+      <div class="reviews-slider" id="reviewsSlider">
+
+        <!-- REVIEW 1 -->
+        <article class="review-card active">
+          <div class="review-stars">★★★★★</div>
+
+          <p class="review-text">
+            Very good product quality. The floor cleaner has a
+            pleasant fragrance and works well for everyday cleaning.
+          </p>
+
+          <div class="review-author">
+            <div class="review-avatar">C</div>
+
+            <div>
+              <strong>Customer 1</strong>
+              <small>Floor Cleaner</small>
+            </div>
+          </div>
+        </article>
+
+        <!-- REVIEW 2 -->
+        <article class="review-card">
+          <div class="review-stars">★★★★★</div>
+
+          <p class="review-text">
+            Good quality products and the pricing is reasonable.
+            Happy with the purchase.
+          </p>
+
+          <div class="review-author">
+            <div class="review-avatar">C</div>
+
+            <div>
+              <strong>Customer 2</strong>
+              <small>Bizmo Products</small>
+            </div>
+          </div>
+        </article>
+
+        <!-- REVIEW 3 -->
+        <article class="review-card">
+          <div class="review-stars">★★★★★</div>
+
+          <p class="review-text">
+            The handwash has a nice fragrance and feels good to use.
+            Good option for regular household use.
+          </p>
+
+          <div class="review-author">
+            <div class="review-avatar">C</div>
+
+            <div>
+              <strong>Customer 3</strong>
+              <small>Handwash</small>
+            </div>
+          </div>
+        </article>
+
+        <!-- REVIEW 4 -->
+        <article class="review-card">
+          <div class="review-stars">★★★★★</div>
+
+          <p class="review-text">
+            We regularly use cleaning products at home and found
+            Bizmo products convenient and effective.
+          </p>
+
+          <div class="review-author">
+            <div class="review-avatar">C</div>
+
+            <div>
+              <strong>Customer 4</strong>
+              <small>Home Cleaning</small>
+            </div>
+          </div>
+        </article>
+
+        <!-- REVIEW 5 -->
+        <article class="review-card">
+          <div class="review-stars">★★★★★</div>
+
+          <p class="review-text">
+            Good products for everyday cleaning needs. The larger
+            packs are also useful for regular usage.
+          </p>
+
+          <div class="review-author">
+            <div class="review-avatar">C</div>
+
+            <div>
+              <strong>Customer 5</strong>
+              <small>Cleaning Products</small>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <button
+        class="review-arrow review-next"
+        type="button"
+        aria-label="Next review">
+        →
+      </button>
+
+    </div>
+
+    <div class="review-dots" id="reviewDots">
+      <button class="review-dot active" type="button" aria-label="Review 1"></button>
+      <button class="review-dot" type="button" aria-label="Review 2"></button>
+      <button class="review-dot" type="button" aria-label="Review 3"></button>
+      <button class="review-dot" type="button" aria-label="Review 4"></button>
+      <button class="review-dot" type="button" aria-label="Review 5"></button>
+    </div>
+
+    <p class="review-demo-note">
+      Sample reviews shown for now. Customer reviews will be added later.
+    </p>
+
+  </div>
+
+</section>
+<!-- FAQ -->
+<section class="section faq-section" id="faq">
+
+  <div class="container">
+
+    <div class="section-head faq-head">
+
+      <span class="kicker">FAQ</span>
+
+      <h2>
+        Frequently Asked <br>
+        <span>Questions.</span>
+      </h2>
+
+      <p>
+        A few quick answers about Bizmo Chemicals and our products.
+      </p>
+
+    </div>
+
+
+    <div class="faq-list">
+
+      <!-- FAQ 1 -->
+      <div class="faq-item">
+
+        <button
+          class="faq-question"
+          type="button">
+
+          <span>
+            Where can I buy Bizmo Chemicals products?
+          </span>
+
+          <b class="faq-icon">+</b>
+
+        </button>
+
+        <div class="faq-answer">
+
+          <p>
+            Bizmo Chemicals products are available for homes,
+            businesses and regular cleaning needs. You can contact
+            us directly for product availability and orders.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- FAQ 2 -->
+      <div class="faq-item">
+
+        <button
+          class="faq-question"
+          type="button">
+
+          <span>
+            Do you provide wholesale orders for businesses?
+          </span>
+
+          <b class="faq-icon">+</b>
+
+        </button>
+
+        <div class="faq-answer">
+
+          <p>
+            Yes. We provide wholesale supply for schools,
+            hospitals, colleges, hotels, businesses and other
+            regular-use requirements. Contact us for wholesale orders.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- FAQ 3 -->
+      <div class="faq-item">
+
+        <button
+          class="faq-question"
+          type="button">
+
+          <span>
+            What sizes are available for Bizmo products?
+          </span>
+
+          <b class="faq-icon">+</b>
+
+        </button>
+
+        <div class="faq-answer">
+
+          <p>
+            Product sizes vary depending on the product. We offer
+            convenient packs for everyday home use as well as larger
+            packs suitable for businesses and bulk requirements.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- FAQ 4 -->
+      <div class="faq-item">
+
+        <button
+          class="faq-question"
+          type="button">
+
+          <span>
+            How can I place an order?
+          </span>
+
+          <b class="faq-icon">+</b>
+
+        </button>
+
+        <div class="faq-answer">
+
+          <p>
+            Select the product you need, choose the available size
+            and flavour where applicable, add it to your cart and
+            proceed to checkout. You can also contact us directly
+            for wholesale enquiries.
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+      <!-- NEWSLETTER -->
+      <section class="newsletter">
+
+        <div class="container">
+
+          <div class="newsletter-heading">
+
+            <span class="kicker">STAY CONNECTED</span>
+
+            <h2>
+              Fresh deals. New launches. <br>
+              No clutter.
+            </h2>
+
+            <p>
+              Join our updates for Bizmo products and offers.
+            </p>
+
+          </div>
+
+          <div class="newsletter-cards">
+
+            <div class="newsletter-card whatsapp-card">
+
+              <div class="newsletter-icon">
+                <i class="fa-brands fa-whatsapp"></i>
+              </div>
+
+              <h3>Join WhatsApp Updates</h3>
+
+              <p>
+                Get Bizmo offers, new launches and product
+                updates directly on WhatsApp.
+              </p>
+
+              <button onclick="joinWhatsApp()">
+                Join WhatsApp Group
+              </button>
+
+            </div>
+
+            <div class="newsletter-card query-card">
+
+              <div class="newsletter-icon">
+                <i class="fa-solid fa-comment-dots"></i>
+              </div>
+
+              <h3>Have a Query?</h3>
+
+              <p>
+                Have a question, suggestion or feedback?
+                Send it to us.
+              </p>
+
+              <input
+                id="queryName"
+                type="text"
+                placeholder="Your name"
+              >
+
+              <input
+                id="queryMobile"
+                type="tel"
+                maxlength="10"
+                placeholder="Your mobile number"
+              >
+
+              <textarea
+                id="queryMessage"
+                rows="3"
+                placeholder="Your query or feedback"
+              ></textarea>
+
+              <button onclick="sendQuery()">
+                Send Query
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer id="contact">
+
+      <div class="container footer-grid">
+
+        <div class="footer-brand">
+
+          <img
+            src="assets/logo.png"
+            alt="Bizmo Chemicals"
+          >
+
+          <p>
+            Cleaner home. Safer life. <br>
+            Powerful cleaning solutions for every day.
+          </p>
+
+          <div class="socials">
+
+            <a
+              href="https://www.facebook.com/productvofficial"
+              target="_blank"
+              rel="noopener"
+              aria-label="Facebook"
+            >
+              <i class="fa-brands fa-facebook-f"></i>
+            </a>
+
+            <a
+              href="https://www.instagram.com/bizmo_chemicals?stkn=YjBxNjAya2l3MmR2"
+              target="_blank"
+              rel="noopener"
+              aria-label="Instagram"
+            >
+              <i class="fa-brands fa-instagram"></i>
+            </a>
+
+          </div>
+
+        </div>
+
+        <div>
+
+          <h4>WHAT WE MAKE</h4>
+
+          <span class="footer-product">
+            Floor, Glass and Toilet Cleaners
+          </span>
+
+          <span class="footer-product">
+            Soap Oil
+          </span>
+
+          <span class="footer-product">
+            Tile Salt
+          </span>
+
+          <span class="footer-product">
+            Dish Wash Liquids
+          </span>
+
+          <span class="footer-product">
+            Fabric Conditioners
+          </span>
+
+          <span class="footer-product">
+            Laundry Detergents
+          </span>
+
+          <span class="footer-product">
+            Handwash
+          </span>
+
+          <span class="footer-product">
+            Phenyl
+          </span>
+
+        </div>
+
+        <div>
+
+          <h4>HELP</h4>
+
+          <a
+            href="#contact"
+            onclick="highlightContact(event)"
+          >
+            Contact Us
+          </a>
+<a href="#faq">FAQs</a>
+          <a href="#about">
+            About Bizmo
+          </a>
+
+          <a href="#bulk">
+            Bulk Orders
+          </a>
+
+          <a href="#combos">
+            Combo Packs
+          </a>
+
+        </div>
+
+        <div>
+
+          <h4>CONTACT</h4>
+
+          <p>☎ 8072381426 / 8220025541</p>
+          <p>✉ bizmochemicals@gmail.com</p>
+          <p>📍Ilayangudi, Sivaganga</p>
+
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+
+        <div class="container">
+          © 2026 Bizmo Chemicals. All rights reserved.
+        </div>
+
+      </div>
+
+    </footer>
+
+    <!-- PRODUCT MODAL -->
+    <div class="product-modal" id="productModal">
+
+      <div class="product-modal-box">
+
+        <button
+          type="button"
+          class="modal-close"
+          onclick="closeProductOptions()"
+          aria-label="Close"
+        >
+          ×
+        </button>
+
+        <h2 id="modalProductName">
+          Product Name
+        </h2>
+
+        <p
+          class="modal-label"
+          id="flavourLabel"
+          style="display:none"
+        >
+          Select Flavour
+        </p>
+
+        <div
+          class="size-options flavour-options"
+          id="flavourOptions"
+          style="display:none"
+        ></div>
+
+        <p class="modal-label">
+          Select Size
+        </p>
+
+        <div
+          class="size-options"
+          id="sizeOptions"
+        ></div>
+
+        <p class="modal-label">
+          Quantity
+        </p>
+
+        <div class="quantity-selector">
+
+          <button onclick="changeModalQty(-1)">
+            −
+          </button>
+
+          <span id="modalQty">
+            1
+          </span>
+
+          <button onclick="changeModalQty(1)">
+            +
+          </button>
+
+        </div>
+
+        <div class="modal-price">
+
+          <span>Total</span>
+
+          <strong id="modalPrice">
+            ₹0
+          </strong>
+
+        </div>
+
+        <button
+          class="modal-add-btn"
+          onclick="confirmAddToCart()"
+        >
+          Add to Cart
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- CART -->
+    <div
+      class="cart-drawer"
+      id="cartDrawer"
+    >
+
+      <div class="drawer">
+
+        <div class="drawer-head">
+
+          <h2>Your Cart</h2>
+
+          <button
+            onclick="closeCart()"
+            aria-label="Close cart"
+          >
+            ×
+          </button>
+
+        </div>
+
+        <div
+          id="cartItems"
+          class="cart-items"
+        >
+          <p>Your cart is empty.</p>
+        </div>
+
+        <div class="cart-total">
+
+          <span>Total</span>
+
+          <strong id="cartTotal">
+            ₹0
+          </strong>
+
+        </div>
+
+        <button
+          class="checkout"
+          onclick="checkout()"
+        >
+          Proceed to Checkout
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- CHECKOUT -->
+    <div
+      class="checkout-modal"
+      id="checkoutModal"
+    >
+
+      <div class="checkout-box">
+
+        <button
+          class="checkout-close"
+          onclick="closeCheckout()"
+          aria-label="Close checkout"
+        >
+          ×
+        </button>
+
+        <div class="checkout-header">
+
+          <span class="kicker">
+            BIZMO CHEMICALS
+          </span>
+
+          <h2>Checkout</h2>
+
+          <p>
+            Enter your details to place your Bizmo order.
+          </p>
+
+        </div>
+
+        <div class="checkout-section">
+
+          <h3>Customer Details</h3>
+
+          <label class="checkout-label">
+            Full Name
+          </label>
+
+          <input
+            id="checkoutName"
+            class="checkout-input"
+            type="text"
+            maxlength="60"
+            placeholder="Enter your full name"
+          >
+
+          <label class="checkout-label">
+            Mobile Number
+          </label>
+
+          <input
+            id="checkoutMobile"
+            class="checkout-input"
+            type="tel"
+            maxlength="10"
+            placeholder="Enter 10-digit mobile number"
+          >
+
+        </div>
+
+        <div class="checkout-section">
+
+          <h3>Delivery Address</h3>
+
+          <label class="checkout-label">
+            Address
+          </label>
+
+          <textarea
+            id="checkoutAddress"
+            class="checkout-input"
+            rows="3"
+            maxlength="300"
+            placeholder="House / Door No, Street, Area"
+          ></textarea>
+
+          <div class="checkout-two-column">
+
+            <div>
+
+              <label class="checkout-label">
+                City
+              </label>
+
+              <input
+                id="checkoutCity"
+                class="checkout-input"
+                type="text"
+                maxlength="50"
+                placeholder="City"
+              >
+
+            </div>
+
+            <div>
+
+              <label class="checkout-label">
+                Pincode
+              </label>
+
+              <input
+                id="checkoutPincode"
+                class="checkout-input"
+                type="tel"
+                maxlength="6"
+                placeholder="Pincode"
+              >
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="checkout-section">
+
+          <h3>Order Summary</h3>
+
+          <div
+            class="checkout-items"
+            id="checkoutItems"
+          ></div>
+
+          <div class="checkout-total">
+
+            <span>Total</span>
+
+            <strong id="checkoutTotal">
+              ₹0
+            </strong>
+
+          </div>
+
+        </div>
+
+        <div class="checkout-section">
+
+          <h3>Payment Method</h3>
+
+          <div class="payment-options">
+
+            <label class="payment-option">
+
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="Cash on Delivery"
+                checked
+              >
+
+              <span>
+
+                <strong>
+                  Cash on Delivery
+                </strong>
+
+                <small>
+                  Pay when your order is delivered.
+                </small>
+
+              </span>
+
+            </label>
+
+            <label
+              class="payment-option"
+              style="opacity:.55"
+            >
+
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="UPI"
+                disabled
+              >
+
+              <span>
+
+                <strong>
+                  UPI / Online Payment
+                </strong>
+
+                <small>
+                  Online payment will be available soon.
+                </small>
+
+              </span>
+
+            </label>
+
+          </div>
+
+        </div>
+
+        <button
+          class="place-order-btn"
+          onclick="placeOrder()"
+        >
+          Place Order →
+        </button>
+
+        <p
+          id="checkoutMessage"
+          class="checkout-message"
+        ></p>
+
+      </div>
+
+    </div>
+
+    <!-- TOAST -->
+    <div
+      class="toast"
+      id="toast"
+    >
+      Added to cart ✓
+    </div>
+
+    <script src="script.js"></script>
+<!-- BACK TO TOP -->
+<button
+  id="backToTop"
+  class="back-to-top"
+  type="button"
+  aria-label="Back to top">
+  ↑
+</button>
+  </body>
+</html>
