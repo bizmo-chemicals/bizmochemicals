@@ -2885,98 +2885,387 @@ document.addEventListener(
 	}
 );
 /* =========================
-   CUSTOMER REVIEWS SLIDER
+   CUSTOMER REVIEWS - LIVE GOOGLE SHEET
 ========================= */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  const reviewCards = document.querySelectorAll(".review-card");
-  const reviewDots = document.querySelectorAll(".review-dot");
-  const prevReview = document.querySelector(".review-prev");
-  const nextReview = document.querySelector(".review-next");
+  const SHEET_URL =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSmXiutzdxicv_r8FD0pPAfLgzHbqS0CQARbPwiS6jsehoIMgm4WuVdSaiSkBboHOx4ejqvj8x48njU/pub?gid=0&single=true&output=csv";
 
-  if (!reviewCards.length) return;
+  const slider = document.getElementById("reviewsSlider");
+  const dotsContainer = document.getElementById("reviewDots");
+  const prevButton = document.querySelector(".review-prev");
+  const nextButton = document.querySelector(".review-next");
 
+  if (!slider || !dotsContainer) return;
+
+  let reviews = [];
   let currentReview = 0;
+
+  function parseCSV(text) {
+
+    const rows = [];
+    let row = [];
+    let value = "";
+    let insideQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+
+      const char = text[i];
+      const next = text[i + 1];
+
+      if (char === '"' && insideQuotes && next === '"') {
+        value += '"';
+        i++;
+        continue;
+      }
+
+      if (char === '"') {
+        insideQuotes = !insideQuotes;
+        continue;
+      }
+
+      if (char === "," && !insideQuotes) {
+        row.push(value.trim());
+        value = "";
+        continue;
+      }
+
+      if ((char === "\n" || char === "\r") && !insideQuotes) {
+
+        if (char === "\r" && next === "\n") {
+          i++;
+        }
+
+        row.push(value.trim());
+
+        if (row.some(cell => cell !== "")) {
+          rows.push(row);
+        }
+
+        row = [];
+        value = "";
+        continue;
+      }
+
+      value += char;
+    }
+
+    if (value !== "" || row.length) {
+      row.push(value.trim());
+
+      if (row.some(cell => cell !== "")) {
+        rows.push(row);
+      }
+    }
+
+    return rows;
+  }
+
+
+  function createStars(rating) {
+
+    const number = Math.max(
+      0,
+      Math.min(5, Number(rating) || 0)
+    );
+
+    return "★".repeat(number) + "☆".repeat(5 - number);
+  }
+
+
+  function escapeHTML(value) {
+
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+
+  function renderReviews() {
+
+    slider.innerHTML = "";
+    dotsContainer.innerHTML = "";
+
+    if (!reviews.length) {
+
+      slider.innerHTML = `
+        <article class="review-card active">
+          <div class="review-stars">☆☆☆☆☆</div>
+
+          <p class="review-text">
+            Customer reviews will appear here soon.
+          </p>
+
+          <div class="review-author">
+            <div class="review-avatar">B</div>
+
+            <div>
+              <strong>Bizmo Chemicals</strong>
+              <small>Customer Reviews</small>
+            </div>
+          </div>
+        </article>
+      `;
+
+      return;
+    }
+
+
+    reviews.forEach((review, index) => {
+
+      const firstLetter =
+        (review.name || "C").charAt(0).toUpperCase();
+
+      const card = document.createElement("article");
+
+      card.className =
+        `review-card ${index === 0 ? "active" : ""}`;
+
+      card.innerHTML = `
+        <div class="review-stars">
+          ${createStars(review.rating)}
+        </div>
+
+        <p class="review-text">
+          ${escapeHTML(review.text)}
+        </p>
+
+        <div class="review-author">
+
+          <div class="review-avatar">
+            ${escapeHTML(firstLetter)}
+          </div>
+
+          <div>
+            <strong>
+              ${escapeHTML(review.name)}
+            </strong>
+
+            <small>
+              ${escapeHTML(review.product)}
+            </small>
+          </div>
+
+        </div>
+      `;
+
+      slider.appendChild(card);
+
+
+      const dot = document.createElement("button");
+
+      dot.className =
+        `review-dot ${index === 0 ? "active" : ""}`;
+
+      dot.type = "button";
+
+      dot.setAttribute(
+        "aria-label",
+        `Review ${index + 1}`
+      );
+
+      dot.addEventListener("click", () => {
+        showReview(index);
+      });
+
+      dotsContainer.appendChild(dot);
+
+    });
+
+    currentReview = 0;
+  }
+
 
   function showReview(index) {
 
-    currentReview =
-      (index + reviewCards.length) % reviewCards.length;
+    const cards =
+      slider.querySelectorAll(".review-card");
 
-    reviewCards.forEach((card, i) => {
+    const dots =
+      dotsContainer.querySelectorAll(".review-dot");
+
+    if (!cards.length) return;
+
+    currentReview =
+      (index + cards.length) % cards.length;
+
+    cards.forEach((card, i) => {
+
       card.classList.toggle(
         "active",
         i === currentReview
       );
+
     });
 
-    reviewDots.forEach((dot, i) => {
+    dots.forEach((dot, i) => {
+
       dot.classList.toggle(
         "active",
         i === currentReview
       );
+
     });
   }
 
-  if (prevReview) {
-    prevReview.addEventListener("click", () => {
+
+  if (prevButton) {
+
+    prevButton.addEventListener("click", () => {
+
       showReview(currentReview - 1);
+
     });
+
   }
 
-  if (nextReview) {
-    nextReview.addEventListener("click", () => {
+
+  if (nextButton) {
+
+    nextButton.addEventListener("click", () => {
+
       showReview(currentReview + 1);
+
     });
+
   }
 
-  reviewDots.forEach((dot, index) => {
-    dot.addEventListener("click", () => {
-      showReview(index);
-    });
-  });
 
   /* Mobile swipe */
 
-  const slider = document.querySelector(".reviews-slider");
+  let touchStartX = 0;
 
-  if (slider) {
+  slider.addEventListener(
+    "touchstart",
+    event => {
 
-    let touchStartX = 0;
-    let touchEndX = 0;
+      touchStartX =
+        event.changedTouches[0].screenX;
 
-    slider.addEventListener(
-      "touchstart",
-      (event) => {
-        touchStartX = event.changedTouches[0].screenX;
-      },
-      { passive: true }
-    );
+    },
+    { passive: true }
+  );
 
-    slider.addEventListener(
-      "touchend",
-      (event) => {
 
-        touchEndX = event.changedTouches[0].screenX;
+  slider.addEventListener(
+    "touchend",
+    event => {
 
-        const swipeDistance =
-          touchEndX - touchStartX;
+      const touchEndX =
+        event.changedTouches[0].screenX;
 
-        if (Math.abs(swipeDistance) < 50) {
-          return;
-        }
+      const distance =
+        touchEndX - touchStartX;
 
-        if (swipeDistance < 0) {
-          showReview(currentReview + 1);
-        } else {
-          showReview(currentReview - 1);
-        }
-      },
-      { passive: true }
-    );
-  }
+      if (Math.abs(distance) < 50) return;
 
-  showReview(0);
+      if (distance < 0) {
+        showReview(currentReview + 1);
+      } else {
+        showReview(currentReview - 1);
+      }
+
+    },
+    { passive: true }
+  );
+
+
+  /* Load reviews from Google Sheet */
+
+  fetch(SHEET_URL)
+    .then(response => {
+
+      if (!response.ok) {
+        throw new Error("Unable to load review sheet");
+      }
+
+      return response.text();
+
+    })
+    .then(csv => {
+
+      const rows = parseCSV(csv);
+
+      if (rows.length < 2) {
+        renderReviews();
+        return;
+      }
+
+      const headers =
+        rows[0].map(header =>
+          header.trim().toLowerCase()
+        );
+
+
+      const nameIndex =
+        headers.indexOf("name");
+
+      const productIndex =
+        headers.indexOf("product");
+
+      const ratingIndex =
+        headers.indexOf("rating");
+
+      const reviewIndex =
+        headers.indexOf("review");
+
+      const showIndex =
+        headers.indexOf("show");
+
+
+      reviews = rows
+        .slice(1)
+        .map(row => ({
+
+          name:
+            row[nameIndex] || "",
+
+          product:
+            row[productIndex] || "",
+
+          rating:
+            row[ratingIndex] || "0",
+
+          text:
+            row[reviewIndex] || "",
+
+          show:
+            row[showIndex] || ""
+
+        }))
+        .filter(review =>
+          review.show.trim().toLowerCase() === "yes"
+        )
+        .filter(review =>
+          review.name &&
+          review.text
+        )
+        .slice(-5)
+        .reverse();
+
+
+      renderReviews();
+
+    })
+    .catch(error => {
+
+      console.error(
+        "Review loading error:",
+        error
+      );
+
+      /*
+        If Google Sheet cannot be reached,
+        keep the existing review area usable.
+      */
+
+      renderReviews();
+
+    });
 
 });
