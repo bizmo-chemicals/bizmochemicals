@@ -2113,14 +2113,16 @@ footer {
 }
 
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .footer-grid a:hover {
     color: var(--gold);
   }
-}
 
-.footer-grid a:active {
-  color: var(--gold);
+  .socials a:hover {
+    background: var(--gold);
+    color: var(--violet-deep);
+    transform: translateY(-2px);
+  }
 }
 
 
