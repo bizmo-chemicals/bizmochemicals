@@ -6,10 +6,91 @@ let modalQty = 1;
 
 
 /* =========================
+   BIZMO ORDER API
+========================= */
+
+const BIZMO_ORDER_API_URL =
+	"https://script.google.com/macros/s/AKfycbyY42y_33PuXb0I4JdDUYkD12he6dVKMeBEZKGOstwWBigPtMU44PbUVnccxnC4OA/exec";
+
+let bizmoPendingOrder = null;
+let bizmoOrderSaving = false;
+
+
+/* =========================
+   PAGE SCROLL LOCK
+========================= */
+
+function lockPageScroll() {
+	document.body.classList.add(
+		"page-scroll-locked"
+	);
+}
+
+function unlockPageScroll() {
+	document.body.classList.remove(
+		"page-scroll-locked"
+	);
+}
+
+function updatePageScrollLock() {
+
+	const menuOpen =
+		document
+			.getElementById("navMenu")
+			?.classList.contains("show");
+
+	const cartOpen =
+		document
+			.getElementById("cartDrawer")
+			?.classList.contains("open");
+
+	const productModalOpen =
+		document
+			.getElementById("productModal")
+			?.classList.contains("show");
+
+	const checkoutOpen =
+		document
+			.getElementById("checkoutModal")
+			?.classList.contains("show");
+
+	const orderConfirmOpen =
+		document
+			.getElementById("bizmoOrderConfirm")
+			?.classList.contains("show");
+
+	const editConfirmOpen =
+		document
+			.getElementById("bizmoEditConfirm")
+			?.classList.contains("show");
+
+	const successOpen =
+		document
+			.getElementById("bizmoOrderSuccess")
+			?.classList.contains("show");
+
+	if (
+		menuOpen ||
+		cartOpen ||
+		productModalOpen ||
+		checkoutOpen ||
+		orderConfirmOpen ||
+		editConfirmOpen ||
+		successOpen
+	) {
+		lockPageScroll();
+	} else {
+		unlockPageScroll();
+	}
+}
+
+
+/* =========================
    PRODUCT CATALOG
 ========================= */
 
 const productCatalog = {
+
 	"Toilet Cleaner": {
 		sizes: {
 			"500 ML": 89,
@@ -23,7 +104,10 @@ const productCatalog = {
 			"500 ML": 89,
 			"5 L": 450
 		},
-		flavours: ["Rose", "Lemon"]
+		flavours: [
+			"Rose",
+			"Lemon"
+		]
 	},
 
 	"Fabric Conditioner": {
@@ -51,8 +135,8 @@ const productCatalog = {
 
 	"Glass Cleaner": {
 		sizes: {
-			"500 ML": 90,
-			"5 L": 450
+		"500 ML": 90,
+		"5 L": 450
 		}
 	},
 
@@ -121,19 +205,27 @@ const comboPrices = {
 function updateHandwashSlider(slider, index) {
 
 	const track =
-		slider.querySelector(".handwash-track");
+		slider.querySelector(
+			".handwash-track"
+		);
 
 	if (track) {
+
 		track.style.transform =
 			`translateX(-${index * 100}%)`;
 	}
 }
 
 
-function goToHandwashSlide(slider, index) {
+function goToHandwashSlide(
+	slider,
+	index
+) {
 
 	const slides =
-		slider.querySelectorAll(".handwash-slide");
+		slider.querySelectorAll(
+			".handwash-slide"
+		);
 
 	if (!slides.length) return;
 
@@ -145,20 +237,28 @@ function goToHandwashSlide(slider, index) {
 		index = 0;
 	}
 
-	slider.dataset.slideIndex = index;
+	slider.dataset.slideIndex =
+		index;
 
-	updateHandwashSlider(slider, index);
+	updateHandwashSlider(
+		slider,
+		index
+	);
 
 	slider
-		.querySelectorAll(".handwash-dot")
-		.forEach((dot, n) => {
+		.querySelectorAll(
+			".handwash-dot"
+		)
+		.forEach(
+			(dot, n) => {
 
-			dot.classList.toggle(
-				"active",
-				n === index
-			);
+				dot.classList.toggle(
+					"active",
+					n === index
+				);
 
-		});
+			}
+		);
 }
 
 
@@ -169,158 +269,193 @@ function initializeHandwashSlider() {
 			".handwash-slider"
 		);
 
-	sliders.forEach(slider => {
+	sliders.forEach(
+		slider => {
 
-		if (
-			slider.dataset.sliderInitialized ===
-			"true"
-		) {
-			return;
+			if (
+				slider.dataset
+					.sliderInitialized ===
+				"true"
+			) {
+				return;
+			}
+
+			slider.dataset.sliderInitialized =
+				"true";
+
+			slider.dataset.slideIndex =
+				"0";
+
+			let startX = 0;
+			let currentX = 0;
+			let isDragging = false;
+
+
+			slider.addEventListener(
+				"touchstart",
+				e => {
+
+					startX =
+						currentX =
+							e.touches[0].clientX;
+
+					isDragging = true;
+
+				},
+				{
+					passive: true
+				}
+			);
+
+
+			slider.addEventListener(
+				"touchmove",
+				e => {
+
+					if (isDragging) {
+
+						currentX =
+							e.touches[0].clientX;
+					}
+
+				},
+				{
+					passive: true
+				}
+			);
+
+
+			slider.addEventListener(
+				"touchend",
+				() => {
+
+					if (!isDragging) return;
+
+					const distance =
+						currentX -
+						startX;
+
+					isDragging = false;
+
+					if (
+						Math.abs(distance) >= 50
+					) {
+
+						const currentIndex =
+							Number(
+								slider.dataset
+									.slideIndex || 0
+							);
+
+						goToHandwashSlide(
+							slider,
+							currentIndex +
+								(
+									distance < 0
+										? 1
+										: -1
+								)
+						);
+					}
+
+				}
+			);
+
+
+			slider.addEventListener(
+				"mousedown",
+				e => {
+
+					startX =
+						currentX =
+							e.clientX;
+
+					isDragging = true;
+
+					slider.classList.add(
+						"dragging"
+					);
+
+				}
+			);
+
+
+			slider.addEventListener(
+				"mousemove",
+				e => {
+
+					if (isDragging) {
+
+						currentX =
+							e.clientX;
+					}
+
+				}
+			);
+
+
+			slider.addEventListener(
+				"mouseup",
+				() => {
+
+					if (!isDragging) return;
+
+					const distance =
+						currentX -
+						startX;
+
+					isDragging = false;
+
+					slider.classList.remove(
+						"dragging"
+					);
+
+					if (
+						Math.abs(distance) >= 50
+					) {
+
+						const currentIndex =
+							Number(
+								slider.dataset
+									.slideIndex || 0
+							);
+
+						goToHandwashSlide(
+							slider,
+							currentIndex +
+								(
+									distance < 0
+										? 1
+										: -1
+								)
+						);
+					}
+
+				}
+			);
+
+
+			slider.addEventListener(
+				"mouseleave",
+				() => {
+
+					isDragging = false;
+
+					slider.classList.remove(
+						"dragging"
+					);
+
+				}
+			);
+
+
+			updateHandwashSlider(
+				slider,
+				0
+			);
+
 		}
-
-		slider.dataset.sliderInitialized = "true";
-		slider.dataset.slideIndex = "0";
-
-		let startX = 0;
-		let currentX = 0;
-		let isDragging = false;
-
-		slider.addEventListener(
-			"touchstart",
-			e => {
-
-				startX =
-					currentX =
-						e.touches[0].clientX;
-
-				isDragging = true;
-
-			},
-			{
-				passive: true
-			}
-		);
-
-		slider.addEventListener(
-			"touchmove",
-			e => {
-
-				if (isDragging) {
-					currentX =
-						e.touches[0].clientX;
-				}
-
-			},
-			{
-				passive: true
-			}
-		);
-
-		slider.addEventListener(
-			"touchend",
-			() => {
-
-				if (!isDragging) return;
-
-				const distance =
-					currentX - startX;
-
-				isDragging = false;
-
-				if (Math.abs(distance) >= 50) {
-
-					const currentIndex =
-						Number(
-							slider.dataset.slideIndex || 0
-						);
-
-					goToHandwashSlide(
-						slider,
-						currentIndex +
-							(distance < 0 ? 1 : -1)
-					);
-				}
-
-			}
-		);
-
-		slider.addEventListener(
-			"mousedown",
-			e => {
-
-				startX =
-					currentX =
-						e.clientX;
-
-				isDragging = true;
-
-				slider.classList.add("dragging");
-
-			}
-		);
-
-		slider.addEventListener(
-			"mousemove",
-			e => {
-
-				if (isDragging) {
-					currentX = e.clientX;
-				}
-
-			}
-		);
-
-		slider.addEventListener(
-			"mouseup",
-			() => {
-
-				if (!isDragging) return;
-
-				const distance =
-					currentX - startX;
-
-				isDragging = false;
-
-				slider.classList.remove(
-					"dragging"
-				);
-
-				if (Math.abs(distance) >= 50) {
-
-					const currentIndex =
-						Number(
-							slider.dataset.slideIndex || 0
-						);
-
-					goToHandwashSlide(
-						slider,
-						currentIndex +
-							(distance < 0 ? 1 : -1)
-					);
-				}
-
-			}
-		);
-
-		slider.addEventListener(
-			"mouseleave",
-			() => {
-
-				isDragging = false;
-
-				slider.classList.remove(
-					"dragging"
-				);
-
-			}
-		);
-
-		updateHandwashSlider(
-			slider,
-			0
-		);
-
-	});
+	);
 }
 
 
@@ -328,17 +463,24 @@ function initializeHandwashSlider() {
    PRODUCT OPTIONS MODAL
 ========================= */
 
-function openProductOptions(productName) {
+function openProductOptions(
+	productName
+) {
 
 	const product =
 		productCatalog[productName];
 
 	if (!product) return;
 
-	selectedProduct = productName;
+	selectedProduct =
+		productName;
+
 	selectedSize = "";
+
 	selectedFlavour = "";
+
 	modalQty = 1;
+
 
 	const nameElement =
 		document.getElementById(
@@ -365,18 +507,33 @@ function openProductOptions(productName) {
 			"sizeOptions"
 		);
 
+
 	if (nameElement) {
-		nameElement.textContent = productName;
+
+		nameElement.textContent =
+			productName;
 	}
+
 
 	if (qtyElement) {
-		qtyElement.textContent = "1";
+
+		qtyElement.textContent =
+			"1";
 	}
 
-	if (!flavourOptions || !sizeOptions) return;
+
+	if (
+		!flavourOptions ||
+		!sizeOptions
+	) {
+		return;
+	}
+
 
 	flavourOptions.innerHTML = "";
+
 	sizeOptions.innerHTML = "";
+
 
 	if (
 		product.flavours &&
@@ -384,72 +541,107 @@ function openProductOptions(productName) {
 	) {
 
 		if (flavourLabel) {
-			flavourLabel.style.display = "block";
+
+			flavourLabel.style.display =
+				"block";
 		}
 
-		flavourOptions.style.display = "grid";
+		flavourOptions.style.display =
+			"grid";
 
-		product.flavours.forEach(flavour => {
 
-			const button =
-				document.createElement("button");
+		product.flavours.forEach(
+			flavour => {
 
-			button.type = "button";
-			button.textContent = flavour;
-
-			button.addEventListener(
-				"click",
-				() => {
-					selectFlavour(
-						button,
-						flavour
+				const button =
+					document.createElement(
+						"button"
 					);
-				}
-			);
 
-			flavourOptions.appendChild(button);
+				button.type =
+					"button";
 
-		});
+				button.textContent =
+					flavour;
+
+
+				button.addEventListener(
+					"click",
+					() => {
+
+						selectFlavour(
+							button,
+							flavour
+						);
+
+					}
+				);
+
+
+				flavourOptions.appendChild(
+					button
+				);
+
+			}
+		);
 
 	} else {
 
 		if (flavourLabel) {
-			flavourLabel.style.display = "none";
+
+			flavourLabel.style.display =
+				"none";
 		}
 
-		flavourOptions.style.display = "none";
+		flavourOptions.style.display =
+			"none";
 	}
 
 
-	Object.entries(product.sizes)
-		.forEach(([size, price]) => {
+	Object.entries(
+		product.sizes
+	).forEach(
+		([size, price]) => {
 
 			const button =
-				document.createElement("button");
+				document.createElement(
+					"button"
+				);
 
-			button.type = "button";
+			button.type =
+				"button";
 
 			button.textContent =
 				`${size} - ₹${price}`;
 
+
 			button.addEventListener(
 				"click",
 				() => {
+
 					selectSize(
 						button,
 						size
 					);
+
 				}
 			);
 
-			sizeOptions.appendChild(button);
 
-		});
+			sizeOptions.appendChild(
+				button
+			);
+
+		}
+	);
 
 
 	/* PHENYL DEFAULT */
 
-	if (productName === "Phenyl") {
+	if (
+		productName ===
+		"Phenyl"
+	) {
 
 		const firstFlavour =
 			flavourOptions.querySelector(
@@ -465,58 +657,92 @@ function openProductOptions(productName) {
 		}
 	}
 
+
 	updateModalPrice();
 
+
 	document
-		.getElementById("productModal")
+		.getElementById(
+			"productModal"
+		)
 		?.classList.add("show");
+
+
+	updatePageScrollLock();
 }
 
 
 function closeProductOptions() {
 
 	document
-		.getElementById("productModal")
+		.getElementById(
+			"productModal"
+		)
 		?.classList.remove("show");
+
+	updatePageScrollLock();
 }
 
 
-function selectSize(button, size) {
+function selectSize(
+	button,
+	size
+) {
 
 	document
 		.querySelectorAll(
 			"#sizeOptions button"
 		)
-		.forEach(b =>
-			b.classList.remove("selected")
+		.forEach(
+			b =>
+				b.classList.remove(
+					"selected"
+				)
 		);
 
-	button.classList.add("selected");
 
-	selectedSize = size;
+	button.classList.add(
+		"selected"
+	);
+
+	selectedSize =
+		size;
 
 	updateModalPrice();
 }
 
 
-function selectFlavour(button, flavour) {
+function selectFlavour(
+	button,
+	flavour
+) {
 
 	document
 		.querySelectorAll(
 			"#flavourOptions button"
 		)
-		.forEach(b =>
-			b.classList.remove("selected")
+		.forEach(
+			b =>
+				b.classList.remove(
+					"selected"
+				)
 		);
 
-	button.classList.add("selected");
 
-	selectedFlavour = flavour;
+	button.classList.add(
+		"selected"
+	);
+
+	selectedFlavour =
+		flavour;
 
 
 	/* PHENYL SPECIAL SIZE LOGIC */
 
-	if (selectedProduct === "Phenyl") {
+	if (
+		selectedProduct ===
+		"Phenyl"
+	) {
 
 		const sizeOptions =
 			document.getElementById(
@@ -525,39 +751,50 @@ function selectFlavour(button, flavour) {
 
 		if (!sizeOptions) return;
 
+
 		sizeOptions.innerHTML = "";
+
 
 		const sizes = {
 			"1 L": 45,
 			"5 L": 450
 		};
 
-		Object.entries(sizes)
-			.forEach(([size, price]) => {
+
+		Object.entries(
+			sizes
+		).forEach(
+			([size, price]) => {
 
 				const button =
 					document.createElement(
 						"button"
 					);
 
-				button.type = "button";
+				button.type =
+					"button";
 
 				button.textContent =
 					`${size} - ₹${price}`;
 
+
 				const disabled =
 					(
-						flavour === "White Phenyl" &&
+						flavour ===
+						"White Phenyl" &&
 						size === "5 L"
 					) ||
 					(
-						flavour === "Black Phenyl" &&
+						flavour ===
+						"Black Phenyl" &&
 						size === "1 L"
 					);
 
+
 				if (disabled) {
 
-					button.disabled = true;
+					button.disabled =
+						true;
 
 					button.classList.add(
 						"disabled"
@@ -568,34 +805,46 @@ function selectFlavour(button, flavour) {
 					button.addEventListener(
 						"click",
 						() => {
+
 							selectSize(
 								button,
 								size
 							);
+
 						}
 					);
 				}
 
-				sizeOptions.appendChild(button);
 
-			});
+				sizeOptions.appendChild(
+					button
+				);
+
+			}
+		);
+
 
 		const validSize =
-			flavour === "White Phenyl"
+			flavour ===
+			"White Phenyl"
 				? "1 L"
 				: "5 L";
 
+
 		const validButton =
 			[
-				...sizeOptions.querySelectorAll(
-					"button"
-				)
+				...sizeOptions
+					.querySelectorAll(
+						"button"
+					)
 			].find(
 				button =>
-					button.textContent.startsWith(
-						validSize
-					)
+					button.textContent
+						.startsWith(
+							validSize
+						)
 			);
+
 
 		if (validButton) {
 
@@ -608,7 +857,9 @@ function selectFlavour(button, flavour) {
 }
 
 
-function changeModalQty(change) {
+function changeModalQty(
+	change
+) {
 
 	modalQty =
 		Math.max(
@@ -616,14 +867,19 @@ function changeModalQty(change) {
 			modalQty + change
 		);
 
+
 	const qty =
 		document.getElementById(
 			"modalQty"
 		);
 
+
 	if (qty) {
-		qty.textContent = modalQty;
+
+		qty.textContent =
+			modalQty;
 	}
+
 
 	updateModalPrice();
 }
@@ -632,27 +888,38 @@ function changeModalQty(change) {
 function updateModalPrice() {
 
 	const product =
-		productCatalog[selectedProduct];
+		productCatalog[
+			selectedProduct
+		];
 
 	const price =
 		document.getElementById(
 			"modalPrice"
 		);
 
+
 	if (!price) return;
+
 
 	if (
 		!product ||
 		!selectedSize
 	) {
 
-		price.textContent = "₹0";
+		price.textContent =
+			"₹0";
 
 		return;
 	}
 
+
 	price.textContent =
-		`₹${product.sizes[selectedSize] * modalQty}`;
+		`₹${
+			product.sizes[
+				selectedSize
+			] *
+			modalQty
+		}`;
 }
 
 
@@ -663,7 +930,9 @@ function updateModalPrice() {
 function confirmAddToCart() {
 
 	const product =
-		productCatalog[selectedProduct];
+		productCatalog[
+			selectedProduct
+		];
 
 	if (!product) return;
 
@@ -692,29 +961,45 @@ function confirmAddToCart() {
 
 
 	const price =
-		product.sizes[selectedSize];
+		product.sizes[
+			selectedSize
+		];
+
 
 	const existing =
 		cart.find(
 			item =>
-				item.name === selectedProduct &&
-				item.size === selectedSize &&
-				item.flavour === selectedFlavour
+				item.name ===
+					selectedProduct &&
+				item.size ===
+					selectedSize &&
+				item.flavour ===
+					selectedFlavour
 		);
 
 
 	if (existing) {
 
-		existing.qty += modalQty;
+		existing.qty +=
+			modalQty;
 
 	} else {
 
 		cart.push({
-			name: selectedProduct,
-			size: selectedSize,
-			flavour: selectedFlavour || "",
-			price: Number(price),
-			qty: modalQty
+			name:
+				selectedProduct,
+
+			size:
+				selectedSize,
+
+			flavour:
+				selectedFlavour || "",
+
+			price:
+				Number(price),
+
+			qty:
+				modalQty
 		});
 	}
 
@@ -740,175 +1025,227 @@ function confirmAddToCart() {
 function updateProductButtons() {
 
 	document
-		.querySelectorAll(".product-card")
-		.forEach(card => {
+		.querySelectorAll(
+			".product-card"
+		)
+		.forEach(
+			card => {
 
-			const name =
-				card.dataset.name;
+				const name =
+					card.dataset.name;
 
-			const info =
-				card.querySelector(
-					".product-info"
-				);
-
-			if (!name || !info) return;
-
-
-			const inCart =
-				cart.some(
-					item =>
-						item.name === name &&
-						item.size
-				);
-
-
-			let cartButtons =
-				info.querySelector(
-					".product-cart-buttons"
-				);
-
-			let addButton =
-				info.querySelector(
-					".product-add-btn"
-				);
-
-
-			/*
-			 * FALLBACK:
-			 * Find a normal button if
-			 * product-add-btn class
-			 * isn't present.
-			 */
-			if (!addButton && !cartButtons) {
-
-				const buttons =
-					info.querySelectorAll(
-						"button"
+				const info =
+					card.querySelector(
+						".product-info"
 					);
 
-				if (buttons.length) {
-					addButton =
-						buttons[buttons.length - 1];
-				}
-			}
-
-
-			/* IN CART */
-
-			if (inCart) {
-
-				if (cartButtons) return;
-
-				if (!addButton) return;
-
-
-				const area =
-					document.createElement(
-						"div"
-					);
-
-				area.className =
-					"product-cart-buttons";
-
-
-				const addMore =
-					document.createElement(
-						"button"
-					);
-
-				addMore.type = "button";
-				addMore.className =
-					"add-more-btn";
-				addMore.textContent =
-					"+ Add More";
-
-				addMore.addEventListener(
-					"click",
-					() => {
-						openProductOptions(name);
-					}
-				);
-
-
-				const edit =
-					document.createElement(
-						"button"
-					);
-
-				edit.type = "button";
-				edit.className =
-					"edit-cart-btn";
-				edit.textContent =
-					"- Edit";
-
-				edit.addEventListener(
-					"click",
-					openCart
-				);
-
-
-				area.appendChild(addMore);
-				area.appendChild(edit);
-
-				addButton.replaceWith(area);
-
-				return;
-			}
-
-
-			/* NOT IN CART */
-
-			if (cartButtons) {
-
-				const button =
-					document.createElement(
-						"button"
-					);
-
-				button.type = "button";
-				button.className =
-					"product-add-btn";
-				button.textContent =
-					"Add to Cart";
-
-				button.addEventListener(
-					"click",
-					() => {
-						openProductOptions(name);
-					}
-				);
-
-				cartButtons.replaceWith(button);
-
-				return;
-			}
-
-
-			if (addButton) {
-
-				addButton.classList.add(
-					"product-add-btn"
-				);
-
-				/* Prevent duplicate listeners */
 				if (
-					addButton.dataset.cartReady !==
-					"true"
+					!name ||
+					!info
+				) {
+					return;
+				}
+
+
+				const inCart =
+					cart.some(
+						item =>
+							item.name ===
+								name &&
+							item.size
+					);
+
+
+				let cartButtons =
+					info.querySelector(
+						".product-cart-buttons"
+					);
+
+				let addButton =
+					info.querySelector(
+						".product-add-btn"
+					);
+
+
+				if (
+					!addButton &&
+					!cartButtons
 				) {
 
-					addButton.dataset.cartReady =
-						"true";
+					const buttons =
+						info.querySelectorAll(
+							"button"
+						);
 
-					addButton.addEventListener(
+					if (buttons.length) {
+
+						addButton =
+							buttons[
+								buttons.length - 1
+							];
+					}
+				}
+
+
+				/* IN CART */
+
+				if (inCart) {
+
+					if (cartButtons) {
+						return;
+					}
+
+					if (!addButton) {
+						return;
+					}
+
+
+					const area =
+						document.createElement(
+							"div"
+						);
+
+					area.className =
+						"product-cart-buttons";
+
+
+					const addMore =
+						document.createElement(
+							"button"
+						);
+
+					addMore.type =
+						"button";
+
+					addMore.className =
+						"add-more-btn";
+
+					addMore.textContent =
+						"+ Add More";
+
+
+					addMore.addEventListener(
 						"click",
 						() => {
-							openProductOptions(name);
+
+							openProductOptions(
+								name
+							);
+
 						}
 					);
-				}
-			}
 
-		});
+
+					const edit =
+						document.createElement(
+							"button"
+						);
+
+					edit.type =
+						"button";
+
+					edit.className =
+						"edit-cart-btn";
+
+					edit.textContent =
+						"- Edit";
+
+
+					edit.addEventListener(
+						"click",
+						openCart
+					);
+
+
+					area.appendChild(
+						addMore
+					);
+
+					area.appendChild(
+						edit
+					);
+
+
+					addButton.replaceWith(
+						area
+					);
+
+					return;
+				}
+
+
+				/* NOT IN CART */
+
+				if (cartButtons) {
+
+					const button =
+						document.createElement(
+							"button"
+						);
+
+					button.type =
+						"button";
+
+					button.className =
+						"product-add-btn";
+
+					button.textContent =
+						"Add to Cart";
+
+
+					button.addEventListener(
+						"click",
+						() => {
+
+							openProductOptions(
+								name
+							);
+
+						}
+					);
+
+
+					cartButtons.replaceWith(
+						button
+					);
+
+					return;
+				}
+
+
+				if (addButton) {
+
+					addButton.classList.add(
+						"product-add-btn"
+					);
+
+
+					if (
+						addButton.dataset
+							.cartReady !==
+						"true"
+					) {
+
+						addButton.dataset
+							.cartReady =
+							"true";
+
+
+						addButton.addEventListener(
+							"click",
+							() => {
+
+								openProductOptions(
+									name
+								);
+
+							}
+						);
+					}
+				}
+
+			}
+		);
 }
 
 
@@ -920,69 +1257,103 @@ function getComboName(card) {
 
 	if (!card) return "";
 
+
 	const button =
-		card.querySelector("[data-combo]");
+		card.querySelector(
+			"[data-combo]"
+		);
+
 
 	if (button?.dataset.combo) {
 
 		const name =
 			button.dataset.combo.trim();
 
+
 		if (comboPrices[name]) {
 			return name;
 		}
 	}
 
+
 	const heading =
-		card.querySelector(".combo-copy h2");
+		card.querySelector(
+			".combo-copy h2"
+		);
+
 
 	if (heading) {
 
 		const name =
 			heading.textContent.trim();
 
+
 		if (comboPrices[name]) {
 			return name;
 		}
 	}
 
+
 	const kicker =
-		card.querySelector(".kicker");
+		card.querySelector(
+			".kicker"
+		);
+
 
 	if (kicker) {
 
 		const name =
 			kicker.textContent
 				.trim()
-				.replace(/^COMBO\s+/i, "Combo ");
+				.replace(
+					/^COMBO\s+/i,
+					"Combo "
+				);
+
 
 		if (comboPrices[name]) {
 			return name;
 		}
 	}
 
+
 	return "";
 }
 
 
-function addComboToCart(comboName) {
+function addComboToCart(
+	comboName
+) {
 
 	const price =
-		Number(comboPrices[comboName]);
+		Number(
+			comboPrices[
+				comboName
+			]
+		);
 
-	if (!comboName || !price) {
 
-		showToast("Unable to add combo");
+	if (
+		!comboName ||
+		!price
+	) {
+
+		showToast(
+			"Unable to add combo"
+		);
 
 		return;
 	}
 
+
 	const existing =
 		cart.find(
 			item =>
-				item.name === comboName &&
+				item.name ===
+					comboName &&
 				!item.size
 		);
+
 
 	if (existing) {
 
@@ -991,19 +1362,27 @@ function addComboToCart(comboName) {
 	} else {
 
 		cart.push({
-			name: comboName,
-			price: price,
-			qty: 1
+			name:
+				comboName,
+
+			price:
+				price,
+
+			qty:
+				1
 		});
 	}
+
 
 	updateCartCount();
 	renderCart();
 	updateProductButtons();
 	updateComboButton();
 
+
 	showToast(
-		comboName + " added to cart"
+		comboName +
+		" added to cart"
 	);
 }
 
@@ -1015,105 +1394,128 @@ function addComboToCart(comboName) {
 function updateComboButton() {
 
 	document
-		.querySelectorAll(".combo-card")
-		.forEach(card => {
+		.querySelectorAll(
+			".combo-card"
+		)
+		.forEach(
+			card => {
 
-			const comboName =
-				getComboName(card);
-
-			if (!comboName) return;
-
-			const existing =
-				cart.find(
-					item =>
-						item.name === comboName &&
-						!item.size
-				);
-
-			const addButton =
-				card.querySelector(
-					".combo-add-btn"
-				);
-
-			const cartButtons =
-				card.querySelector(
-					".combo-cart-buttons"
-				);
+				const comboName =
+					getComboName(
+						card
+					);
 
 
-			/* =====================
-			   COMBO ALREADY IN CART
-			===================== */
-
-			if (existing) {
-
-				if (cartButtons) {
+				if (!comboName) {
 					return;
 				}
 
-				if (addButton) {
 
-					const area =
-						document.createElement("div");
+				const existing =
+					cart.find(
+						item =>
+							item.name ===
+								comboName &&
+							!item.size
+					);
 
-					area.className =
-						"combo-cart-buttons";
 
-					area.dataset.combo =
-						comboName;
+				const addButton =
+					card.querySelector(
+						".combo-add-btn"
+					);
 
-					area.innerHTML = `
-						<button
-							class="add-more-btn combo-add-more"
-							type="button"
-							data-combo="${comboName}">
-							+ Add More
-						</button>
 
-						<button
-							class="edit-cart-btn combo-edit-cart"
-							type="button">
-							- Edit
-						</button>
-					`;
+				const cartButtons =
+					card.querySelector(
+						".combo-cart-buttons"
+					);
 
-					addButton.replaceWith(area);
+
+				/* COMBO ALREADY IN CART */
+
+				if (existing) {
+
+					if (cartButtons) {
+						return;
+					}
+
+
+					if (addButton) {
+
+						const area =
+							document.createElement(
+								"div"
+							);
+
+						area.className =
+							"combo-cart-buttons";
+
+						area.dataset.combo =
+							comboName;
+
+
+						area.innerHTML = `
+							<button
+								class="add-more-btn combo-add-more"
+								type="button"
+								data-combo="${comboName}">
+								+ Add More
+							</button>
+
+							<button
+								class="edit-cart-btn combo-edit-cart"
+								type="button">
+								- Edit
+							</button>
+						`;
+
+
+						addButton.replaceWith(
+							area
+						);
+					}
+
+					return;
 				}
 
-				return;
+
+				/* COMBO NOT IN CART */
+
+				if (cartButtons) {
+
+					const button =
+						document.createElement(
+							"button"
+						);
+
+					button.type =
+						"button";
+
+					button.className =
+						"combo-add-btn";
+
+					button.dataset.combo =
+						comboName;
+
+					button.textContent =
+						"Add to Cart";
+
+
+					cartButtons.replaceWith(
+						button
+					);
+				}
+
+
+				if (addButton) {
+
+					addButton.dataset.combo =
+						comboName;
+				}
+
 			}
-
-
-			/* =====================
-			   COMBO NOT IN CART
-			===================== */
-
-			if (cartButtons) {
-
-				const button =
-					document.createElement("button");
-
-				button.type = "button";
-				button.className =
-					"combo-add-btn";
-
-				button.dataset.combo =
-					comboName;
-
-				button.textContent =
-					"Add to Cart";
-
-				cartButtons.replaceWith(button);
-
-			}
-
-			if (addButton) {
-
-				addButton.dataset.combo =
-					comboName;
-			}
-
-		});
+		);
 }
 
 
@@ -1125,59 +1527,65 @@ document.addEventListener(
 	"click",
 	e => {
 
-		/* ADD TO CART */
-
 		const addButton =
 			e.target.closest(
 				".combo-add-btn"
 			);
+
 
 		if (addButton) {
 
 			e.preventDefault();
 			e.stopPropagation();
 
+
 			const comboName =
 				addButton.dataset.combo;
 
-			addComboToCart(comboName);
+
+			addComboToCart(
+				comboName
+			);
 
 			return;
 		}
 
-
-		/* + ADD MORE */
 
 		const addMoreButton =
 			e.target.closest(
 				".combo-add-more"
 			);
 
+
 		if (addMoreButton) {
 
 			e.preventDefault();
 			e.stopPropagation();
 
+
 			const comboName =
 				addMoreButton.dataset.combo;
 
-			addComboToCart(comboName);
+
+			addComboToCart(
+				comboName
+			);
 
 			return;
 		}
 
-
-		/* - EDIT */
 
 		const editButton =
 			e.target.closest(
 				".combo-edit-cart"
 			);
 
+
 		if (editButton) {
 
 			e.preventDefault();
 			e.stopPropagation();
+
 
 			openCart();
 
@@ -1193,21 +1601,29 @@ document.addEventListener(
    GENERIC ADD TO CART
 ========================= */
 
-function addToCart(name, price) {
+function addToCart(
+	name,
+	price
+) {
 
 	if (comboPrices[name]) {
 
-		addComboToCart(name);
+		addComboToCart(
+			name
+		);
 
 		return;
 	}
 
+
 	const existing =
 		cart.find(
 			item =>
-				item.name === name &&
+				item.name ===
+					name &&
 				!item.size
 		);
+
 
 	if (existing) {
 
@@ -1216,21 +1632,31 @@ function addToCart(name, price) {
 	} else {
 
 		cart.push({
-			name: name,
-			price: Number(price) || 0,
-			qty: 1
+			name:
+				name,
+
+			price:
+				Number(price) || 0,
+
+			qty:
+				1
 		});
 	}
+
 
 	updateCartCount();
 	renderCart();
 	updateProductButtons();
 	updateComboButton();
 
+
 	showToast(
-		name + " added to cart"
+		name +
+		" added to cart"
 	);
 }
+
+
 /* =========================
    CART
 ========================= */
@@ -1242,12 +1668,15 @@ function updateCartCount() {
 			"cartCount"
 		);
 
+
 	if (!count) return;
+
 
 	count.textContent =
 		cart.reduce(
 			(total, item) =>
-				total + (item.qty || 0),
+				total +
+				(item.qty || 0),
 			0
 		);
 }
@@ -1265,7 +1694,13 @@ function renderCart() {
 			"cartTotal"
 		);
 
-	if (!box || !totalBox) return;
+
+	if (
+		!box ||
+		!totalBox
+	) {
+		return;
+	}
 
 
 	if (!cart.length) {
@@ -1289,22 +1724,29 @@ function renderCart() {
 						item.price *
 						item.qty;
 
+
 					return `
 						<div class="cart-line">
 
 							<span>
 								${index + 1}.
-								${escapeHTML(item.name)}
+								${escapeHTML(
+									item.name
+								)}
 
 								${
 									item.flavour
-										? `<small>${escapeHTML(item.flavour)}</small>`
+										? `<small>${escapeHTML(
+												item.flavour
+											)}</small>`
 										: ""
 								}
 
 								${
 									item.size
-										? `<small>${escapeHTML(item.size)}</small>`
+										? `<small>${escapeHTML(
+												item.size
+											)}</small>`
 										: ""
 								}
 							</span>
@@ -1315,7 +1757,11 @@ function renderCart() {
 									type="button"
 									onclick="changeCartQty(${index},-1)"
 								>
-									${item.qty === 1 ? "🗑" : "−"}
+									${
+										item.qty === 1
+											? "🗑"
+											: "−"
+									}
 								</button>
 
 								<strong>
@@ -1351,15 +1797,20 @@ function renderCart() {
 			0
 		);
 
+
 	totalBox.textContent =
 		"₹" + total;
 }
 
 
-function changeCartQty(index, change) {
+function changeCartQty(
+	index,
+	change
+) {
 
 	const item =
 		cart[index];
+
 
 	if (!item) return;
 
@@ -1390,6 +1841,7 @@ function openCart() {
 			"cartDrawer"
 		);
 
+
 	if (!drawer) return;
 
 
@@ -1400,8 +1852,12 @@ function openCart() {
 
 
 	if (isOpen) {
+
 		renderCart();
 	}
+
+
+	updatePageScrollLock();
 }
 
 
@@ -1411,7 +1867,12 @@ function closeCart() {
 		.getElementById(
 			"cartDrawer"
 		)
-		?.classList.remove("open");
+		?.classList.remove(
+			"open"
+		);
+
+
+	updatePageScrollLock();
 }
 
 
@@ -1430,24 +1891,37 @@ function checkout() {
 		return;
 	}
 
+
 	closeCart();
 
 	renderCheckoutItems();
+
 
 	const message =
 		document.getElementById(
 			"checkoutMessage"
 		);
 
+
 	if (message) {
-		message.textContent = "";
+
+		message.textContent =
+			"";
 	}
+
 
 	document
 		.getElementById(
 			"checkoutModal"
 		)
-		?.classList.add("show");
+		?.classList.add(
+			"show"
+		);
+
+
+	updatePageScrollLock();
+
+	updateCodAvailability();
 }
 
 
@@ -1457,7 +1931,12 @@ function closeCheckout() {
 		.getElementById(
 			"checkoutModal"
 		)
-		?.classList.remove("show");
+		?.classList.remove(
+			"show"
+		);
+
+
+	updatePageScrollLock();
 }
 
 
@@ -1473,7 +1952,13 @@ function renderCheckoutItems() {
 			"checkoutTotal"
 		);
 
-	if (!box || !totalBox) return;
+
+	if (
+		!box ||
+		!totalBox
+	) {
+		return;
+	}
 
 
 	box.innerHTML =
@@ -1486,19 +1971,27 @@ function renderCheckoutItems() {
 						<div>
 
 							<span class="checkout-item-name">
-								${escapeHTML(item.name)}
+								${escapeHTML(
+									item.name
+								)}
 							</span>
 
 							<span class="checkout-item-detail">
 								${
 									item.flavour
-										? escapeHTML(item.flavour) + " • "
+										? escapeHTML(
+												item.flavour
+											) +
+											" • "
 										: ""
 								}
 
 								${
 									item.size
-										? escapeHTML(item.size) + " • "
+										? escapeHTML(
+												item.size
+											) +
+											" • "
 										: ""
 								}
 
@@ -1508,7 +2001,10 @@ function renderCheckoutItems() {
 						</div>
 
 						<span class="checkout-item-price">
-							₹${item.price * item.qty}
+							₹${
+								item.price *
+								item.qty
+							}
 						</span>
 
 					</div>
@@ -1526,10 +2022,289 @@ function renderCheckoutItems() {
 			0
 		);
 
+
 	totalBox.textContent =
 		"₹" + total;
 }
 
+
+/* =========================
+   ORDER ID GENERATION
+   CLIENT SIDE
+========================= */
+
+function generateBizmoOrderId() {
+
+	const now =
+		new Date();
+
+	const pad =
+		number =>
+			String(number).padStart(
+				2,
+				"0"
+			);
+
+	const datePart =
+		String(
+			now.getFullYear()
+		).slice(-2) +
+		pad(
+			now.getMonth() + 1
+		) +
+		pad(
+			now.getDate()
+		);
+
+	const timePart =
+		pad(
+			now.getHours()
+		) +
+		pad(
+			now.getMinutes()
+		) +
+		pad(
+			now.getSeconds()
+		);
+
+	const randomPart =
+		String(
+			Math.floor(
+				Math.random() * 1000
+			)
+		).padStart(
+			3,
+			"0"
+		);
+
+	return (
+		"BZ-" +
+		datePart +
+		"-" +
+		timePart +
+		"-" +
+		randomPart
+	);
+}
+
+
+/* =========================
+   SAVE ORDER TO GOOGLE SHEET
+========================= */
+
+function saveBizmoOrder(
+	order
+) {
+
+	if (
+		!order ||
+		!order.orderId
+	) {
+		return false;
+	}
+
+
+	const payload = {
+
+		action:
+			"saveOrder",
+
+		orderId:
+			order.orderId,
+
+		name:
+			order.name,
+
+		mobile:
+			order.mobile,
+
+		address:
+			order.address,
+
+		city:
+			order.city,
+
+		pincode:
+			order.pincode,
+
+		items:
+			order.items,
+
+		total:
+			order.total,
+
+		payment:
+			order.payment
+	};
+
+
+	const body =
+		JSON.stringify(
+			payload
+		);
+
+
+	/*
+	 * sendBeacon is used because the
+	 * Apps Script response does not need
+	 * to be read by the browser.
+	 *
+	 * The request is queued in the
+	 * background and does not block the
+	 * confirmation popup.
+	 */
+
+	try {
+
+		if (
+			typeof navigator.sendBeacon ===
+			"function"
+		) {
+
+			const blob =
+				new Blob(
+					[
+						body
+					],
+					{
+						type:
+							"text/plain;charset=UTF-8"
+					}
+				);
+
+
+			const queued =
+				navigator.sendBeacon(
+					BIZMO_ORDER_API_URL,
+					blob
+				);
+
+
+			if (queued) {
+
+				return true;
+			}
+		}
+
+	} catch (error) {
+
+		console.error(
+			"Order beacon error:",
+			error
+		);
+	}
+
+
+	/*
+	 * Fallback for browsers where
+	 * sendBeacon is unavailable or
+	 * unable to queue the request.
+	 *
+	 * no-cors is intentional because
+	 * we do not need to read the response.
+	 */
+
+	try {
+
+		fetch(
+			BIZMO_ORDER_API_URL,
+			{
+				method:
+					"POST",
+
+				mode:
+					"no-cors",
+
+				credentials:
+					"omit",
+
+				headers: {
+					"Content-Type":
+						"text/plain;charset=utf-8"
+				},
+
+				body:
+					body,
+
+				keepalive:
+					true
+			}
+		)
+			.catch(
+				error => {
+
+					console.error(
+						"Background order save error:",
+						error
+					);
+
+				}
+			);
+
+
+		return true;
+
+	} catch (error) {
+
+		console.error(
+			"Order background save error:",
+			error
+		);
+
+		return false;
+	}
+}
+
+
+/* =========================
+   BUILD ORDER ITEMS
+========================= */
+
+function buildBizmoOrderItems() {
+
+	return cart
+		.map(
+			item => {
+
+				let text =
+					item.name;
+
+				if (item.flavour) {
+
+					text +=
+						" | " +
+						item.flavour;
+				}
+
+				if (item.size) {
+
+					text +=
+						" | " +
+						item.size;
+				}
+
+				text +=
+					" | Qty " +
+					item.qty;
+
+				text +=
+					" | ₹" +
+					(
+						item.price *
+						item.qty
+					);
+
+				return text;
+
+			}
+		)
+		.join("; ");
+}
+
+
+/* =========================
+   PLACE ORDER
+========================= */
 
 function placeOrder() {
 
@@ -1574,6 +2349,10 @@ function placeOrder() {
 		);
 
 
+	/* =========================
+	   VALIDATION
+	========================= */
+
 	if (
 		!name ||
 		!mobile ||
@@ -1609,7 +2388,9 @@ function placeOrder() {
 
 
 	if (
-		!/^\d{6}$/.test(pin)
+		!/^\d{6}$/.test(
+			pin
+		)
 	) {
 
 		message.textContent =
@@ -1622,12 +2403,73 @@ function placeOrder() {
 	}
 
 
+	if (!cart.length) {
+
+		message.textContent =
+			"Your cart is empty.";
+
+		message.style.color =
+			"#e31f4f";
+
+		return;
+	}
+
+
+	/* =========================
+	   PAYMENT
+	========================= */
+
 	const payment =
 		document.querySelector(
 			'input[name="paymentMethod"]:checked'
 		)?.value ||
 		"Cash on Delivery";
 
+
+	/* =========================
+	   COD PINCODE GUARD
+	   Blocks bypass attempts even if the
+	   disabled COD radio is re-enabled
+	   through browser devtools.
+	========================= */
+
+	if (
+		payment ===
+			"Cash on Delivery" &&
+		pin !==
+			BIZMO_COD_PINCODE
+	) {
+
+		message.textContent =
+			"Cash on Delivery is not available for your pincode. Please choose Online Payment.";
+
+		message.style.color =
+			"#e31f4f";
+
+
+		const onlineInput =
+			document.getElementById(
+				"onlinePayment"
+			);
+
+
+		if (onlineInput) {
+
+			onlineInput.checked =
+				true;
+		}
+
+
+		updateCodAvailability();
+
+
+		return;
+	}
+
+
+	/* =========================
+	   TOTAL
+	========================= */
 
 	const total =
 		cart.reduce(
@@ -1639,19 +2481,106 @@ function placeOrder() {
 		);
 
 
+	/*
+	 * IMPORTANT:
+	 *
+	 * Do NOT wait for Apps Script here.
+	 *
+	 * The Order ID is generated locally so
+	 * WhatsApp can be opened immediately
+	 * from the original user click.
+	 */
+
+	clearCheckoutStatus();
+
+
+	const orderId =
+		generateBizmoOrderId();
+
+
+	/* =========================
+	   SAVE PENDING ORDER LOCALLY
+	========================= */
+
+	const orderItems =
+		buildBizmoOrderItems();
+
+
+	bizmoPendingOrder = {
+
+		orderId:
+			orderId,
+
+		name:
+			name,
+
+		mobile:
+			mobile,
+
+		address:
+			address,
+
+		city:
+			city,
+
+		pincode:
+			pin,
+
+		items:
+			orderItems,
+
+		total:
+			total,
+
+		payment:
+			payment
+	};
+
+
+	/*
+	 * Keep a copy in sessionStorage
+	 * so the order data survives the
+	 * WhatsApp app switch.
+	 */
+
+	sessionStorage.setItem(
+		"bizmoPendingOrder",
+		JSON.stringify(
+			bizmoPendingOrder
+		)
+	);
+
+
+	/* =========================
+	   CREATE WHATSAPP MESSAGE
+	========================= */
+
 	let text =
 		"New Bizmo Order\n\n" +
-		"Customer Details\n" +
+
+		"Order ID: " +
+		orderId +
+
+		"\n\nCustomer Details\n" +
+
 		"Name: " +
 		name +
+
 		"\nMobile: " +
 		mobile +
+
 		"\n\nDelivery Address\n" +
+
 		address +
+
 		"\n" +
+
 		city +
+
 		" - " +
+
 		pin +
+
 		"\n\nOrder Details\n";
 
 
@@ -1661,11 +2590,13 @@ function placeOrder() {
 			text +=
 				`${index + 1}. ${item.name}\n`;
 
+
 			if (item.flavour) {
 
 				text +=
 					`   Flavour: ${item.flavour}\n`;
 			}
+
 
 			if (item.size) {
 
@@ -1673,9 +2604,14 @@ function placeOrder() {
 					`   Size: ${item.size}\n`;
 			}
 
+
 			text +=
 				`   Qty: ${item.qty}\n` +
-				`   Price: ₹${item.price * item.qty}\n\n`;
+
+				`   Price: ₹${
+					item.price *
+					item.qty
+				}\n\n`;
 		}
 	);
 
@@ -1684,24 +2620,1165 @@ function placeOrder() {
 		`Total: ₹${total}\nPayment: ${payment}`;
 
 
-	window.open(
-		"https://wa.me/918220025541?text=" +
-		encodeURIComponent(text),
-		"_blank"
+	/* =========================
+	   MARK WHATSAPP ORDER PENDING
+	========================= */
+
+	sessionStorage.setItem(
+		"bizmoWhatsAppPending",
+		"true"
 	);
 
 
-	message.textContent =
-		"Order details prepared successfully.";
+	bizmoWhatsAppLeftPage =
+		false;
 
-	message.style.color =
-		"#159447";
+	bizmoOrderConfirmShown =
+		false;
+
+	bizmoWhatsAppOpenedAt =
+		Date.now();
 
 
-	showToast(
-		"Order details sent to WhatsApp"
+	/* =========================
+	   OPEN WHATSAPP IMMEDIATELY
+	========================= */
+
+	window.open(
+		"whatsapp://send?phone=918220025541&text=" +
+		encodeURIComponent(text)
+	);
+
+
+	/*
+	 * Cart remains unchanged.
+	 * Customer details remain unchanged.
+	 *
+	 * Confirmation is shown only after
+	 * the user leaves Bizmo and returns.
+	 */
+}
+
+
+/* =========================
+   WHATSAPP ORDER CONFIRMATION
+========================= */
+
+let bizmoWhatsAppLeftPage =
+	false;
+
+let bizmoOrderConfirmShown =
+	false;
+
+let bizmoWhatsAppOpenedAt =
+	0;
+
+
+/* =========================
+   CREATE CONFIRMATION POPUPS
+========================= */
+
+function ensureBizmoOrderConfirmPopups() {
+
+	if (
+		document.getElementById(
+			"bizmoOrderConfirm"
+		)
+	) {
+		return;
+	}
+
+
+	const wrapper =
+		document.createElement(
+			"div"
+		);
+
+	wrapper.innerHTML = `
+
+		<div
+			class="bizmo-order-confirm"
+			id="bizmoOrderConfirm"
+			aria-hidden="true"
+		>
+
+			<div
+				class="bizmo-order-confirm-box"
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="bizmoOrderConfirmTitle"
+			>
+
+				<h2 id="bizmoOrderConfirmTitle">
+					WhatsApp Order
+				</h2>
+
+				<p>
+					Did you send the order message on WhatsApp?
+					<br><br>
+					If you already tapped Send, choose
+					<strong>“Order Sent.”</strong>
+				</p>
+
+				<div class="bizmo-order-confirm-actions">
+
+					<button
+						type="button"
+						id="orderSentBtn"
+						class="bizmo-order-btn primary"
+					>
+						✓ Order Sent
+					</button>
+
+					<button
+						type="button"
+						id="editOrderBtn"
+						class="bizmo-order-btn secondary"
+					>
+						✎ I Want to Edit
+					</button>
+
+				</div>
+
+			</div>
+
+		</div>
+
+
+		<div
+			class="bizmo-order-confirm"
+			id="bizmoEditConfirm"
+			aria-hidden="true"
+		>
+
+			<div
+				class="bizmo-order-confirm-box"
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="bizmoEditConfirmTitle"
+			>
+
+				<h2 id="bizmoEditConfirmTitle">
+					Edit Order?
+				</h2>
+
+				<p>
+					If you already sent the WhatsApp message,
+					editing and sending again may create a
+					duplicate order.
+				</p>
+
+				<div class="bizmo-order-confirm-actions">
+
+					<button
+						type="button"
+						id="keepOrderSentBtn"
+						class="bizmo-order-btn primary"
+					>
+						✓ Keep Order Sent
+					</button>
+
+					<button
+						type="button"
+						id="continueEditingBtn"
+						class="bizmo-order-btn secondary"
+					>
+						✎ Continue Editing
+					</button>
+
+				</div>
+
+			</div>
+
+		</div>
+
+	`;
+
+
+	while (
+		wrapper.firstElementChild
+	) {
+
+		document.body.appendChild(
+			wrapper.firstElementChild
+		);
+	}
+}
+
+
+/* =========================
+   SUCCESS POPUP STYLE
+========================= */
+
+function ensureBizmoSuccessPopup() {
+
+	if (
+		document.getElementById(
+			"bizmoOrderSuccess"
+		)
+	) {
+		return;
+	}
+
+
+	const style =
+		document.createElement(
+			"style"
+		);
+
+	style.id =
+		"bizmoOrderSuccessStyles";
+
+
+	style.textContent = `
+
+		.bizmo-order-success {
+			position: fixed;
+			inset: 0;
+			z-index: 99999;
+			display: none;
+			align-items: center;
+			justify-content: center;
+			padding: 20px;
+			background: rgba(0,0,0,0.68);
+			box-sizing: border-box;
+		}
+
+		.bizmo-order-success.show {
+			display: flex;
+		}
+
+		.bizmo-order-success-box {
+			position: relative;
+			width: min(92vw, 460px);
+			background: #ffffff;
+			border-radius: 22px;
+			padding: 34px 24px 26px;
+			text-align: center;
+			box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+			box-sizing: border-box;
+			animation: bizmoSuccessPop 0.25s ease-out;
+		}
+
+		@keyframes bizmoSuccessPop {
+			from {
+				opacity: 0;
+				transform: scale(0.94);
+			}
+
+			to {
+				opacity: 1;
+				transform: scale(1);
+			}
+		}
+
+		.bizmo-success-close-x {
+			position: absolute;
+			top: 10px;
+			right: 12px;
+			width: 38px;
+			height: 38px;
+			border: 0;
+			background: transparent;
+			font-size: 26px;
+			line-height: 1;
+			cursor: pointer;
+			color: #555;
+			border-radius: 50%;
+		}
+
+		.bizmo-success-close-x:hover {
+			background: #f2f2f2;
+		}
+
+		.bizmo-success-icon {
+			width: 64px;
+			height: 64px;
+			margin: 0 auto 16px;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: #fbf4e3;
+			color: #a5813d;
+			font-size: 34px;
+			font-weight: 700;
+		}
+
+		.bizmo-order-success-box h2 {
+			margin: 0 0 10px;
+			font-size: 25px;
+			color: #222;
+		}
+
+		.bizmo-success-message {
+			margin: 0 auto 20px;
+			color: #666;
+			font-size: 15px;
+			line-height: 1.55;
+		}
+
+		.bizmo-success-order-label {
+			margin-top: 10px;
+			font-size: 13px;
+			font-weight: 600;
+			color: #777;
+			text-transform: uppercase;
+			letter-spacing: 0.7px;
+		}
+
+		.bizmo-success-order-id {
+			margin: 8px 0 18px;
+			padding: 14px 12px;
+			border-radius: 12px;
+			background: #faf7f0;
+			color: #111;
+			font-size: 24px;
+			font-weight: 800;
+			letter-spacing: 0.8px;
+			word-break: break-word;
+		}
+
+		.bizmo-success-note {
+			margin: 0 0 20px;
+			font-size: 13px;
+			color: #777;
+			line-height: 1.45;
+		}
+
+		.bizmo-success-close-btn {
+			width: 100%;
+			border: 0;
+			border-radius: 12px;
+			padding: 13px 18px;
+			font-size: 16px;
+			font-weight: 700;
+			cursor: pointer;
+			background: #0c3b2e;
+			color: #fff;
+		}
+
+		.bizmo-success-close-btn:hover {
+			opacity: 0.9;
+		}
+
+		@media (max-width: 480px) {
+
+			.bizmo-order-success {
+				padding: 14px;
+			}
+
+			.bizmo-order-success-box {
+				padding: 32px 18px 22px;
+				border-radius: 18px;
+			}
+
+			.bizmo-order-success-box h2 {
+				font-size: 22px;
+			}
+
+			.bizmo-success-order-id {
+				font-size: 21px;
+			}
+		}
+	`;
+
+
+	document.head.appendChild(
+		style
+	);
+
+
+	const wrapper =
+		document.createElement(
+			"div"
+		);
+
+
+	wrapper.innerHTML = `
+
+		<div
+			class="bizmo-order-success"
+			id="bizmoOrderSuccess"
+			aria-hidden="true"
+		>
+
+			<div
+				class="bizmo-order-success-box"
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="bizmoSuccessTitle"
+			>
+
+				<button
+					type="button"
+					class="bizmo-success-close-x"
+					id="bizmoSuccessCloseX"
+					aria-label="Close"
+				>
+					×
+				</button>
+
+				<div class="bizmo-success-icon">
+					✓
+				</div>
+
+				<h2 id="bizmoSuccessTitle">
+					Order Placed Successfully
+				</h2>
+
+				<p class="bizmo-success-message">
+					Thank you for your order!<br>
+					Your order has been confirmed successfully.
+				</p>
+
+				<div class="bizmo-success-order-label">
+					Order ID
+				</div>
+
+				<div
+					class="bizmo-success-order-id"
+					id="bizmoSuccessOrderId"
+				>
+					-
+				</div>
+
+				<p class="bizmo-success-note">
+					Please save this Order ID for your reference.
+					You can also take a screenshot of this confirmation.
+				</p>
+
+				<button
+					type="button"
+					class="bizmo-success-close-btn"
+					id="bizmoSuccessCloseBtn"
+				>
+					Close
+				</button>
+
+			</div>
+
+		</div>
+
+	`;
+
+
+	document.body.appendChild(
+		wrapper.firstElementChild
 	);
 }
+
+
+/* =========================
+   SUCCESS POPUP HELPERS
+========================= */
+
+function showBizmoOrderSuccess(
+	orderId
+) {
+
+	ensureBizmoSuccessPopup();
+
+
+	const popup =
+		document.getElementById(
+			"bizmoOrderSuccess"
+		);
+
+	const orderIdElement =
+		document.getElementById(
+			"bizmoSuccessOrderId"
+		);
+
+
+	if (!popup) return;
+
+
+	if (orderIdElement) {
+
+		orderIdElement.textContent =
+			orderId || "-";
+	}
+
+
+	popup.classList.add(
+		"show"
+	);
+
+
+	popup.setAttribute(
+		"aria-hidden",
+		"false"
+	);
+
+
+	updatePageScrollLock();
+}
+
+
+function closeBizmoOrderSuccess() {
+
+	const popup =
+		document.getElementById(
+			"bizmoOrderSuccess"
+		);
+
+
+	if (!popup) return;
+
+
+	popup.classList.remove(
+		"show"
+	);
+
+
+	popup.setAttribute(
+		"aria-hidden",
+		"true"
+	);
+
+
+	updatePageScrollLock();
+}
+
+
+/* =========================
+   POPUP HELPERS
+========================= */
+
+function showBizmoOrderConfirm() {
+
+	ensureBizmoOrderConfirmPopups();
+
+
+	const popup =
+		document.getElementById(
+			"bizmoOrderConfirm"
+		);
+
+
+	if (!popup) return;
+
+
+	if (
+		bizmoOrderConfirmShown
+	) {
+		return;
+	}
+
+
+	bizmoOrderConfirmShown =
+		true;
+
+
+	popup.classList.add(
+		"show"
+	);
+
+
+	popup.setAttribute(
+		"aria-hidden",
+		"false"
+	);
+
+
+	updatePageScrollLock();
+}
+
+
+function closeBizmoOrderConfirm() {
+
+	const popup =
+		document.getElementById(
+			"bizmoOrderConfirm"
+		);
+
+
+	if (!popup) return;
+
+
+	popup.classList.remove(
+		"show"
+	);
+
+
+	popup.setAttribute(
+		"aria-hidden",
+		"true"
+	);
+
+
+	updatePageScrollLock();
+}
+
+
+function showBizmoEditConfirm() {
+
+	ensureBizmoOrderConfirmPopups();
+
+
+	const popup =
+		document.getElementById(
+			"bizmoEditConfirm"
+		);
+
+
+	if (!popup) return;
+
+
+	popup.classList.add(
+		"show"
+	);
+
+
+	popup.setAttribute(
+		"aria-hidden",
+		"false"
+	);
+
+
+	updatePageScrollLock();
+}
+
+
+function closeBizmoEditConfirm() {
+
+	const popup =
+		document.getElementById(
+			"bizmoEditConfirm"
+		);
+
+
+	if (!popup) return;
+
+
+	popup.classList.remove(
+		"show"
+	);
+
+
+	popup.setAttribute(
+		"aria-hidden",
+		"true"
+	);
+
+
+	updatePageScrollLock();
+}
+
+
+/* =========================
+   CLEAR CHECKOUT DETAILS
+========================= */
+
+function clearCheckoutStatus() {
+
+	const message =
+		document.getElementById(
+			"checkoutMessage"
+		);
+
+	if (!message) return;
+
+	message.textContent = "";
+
+	message.style.color = "";
+}
+
+
+function clearCheckoutDetails() {
+
+	const fields = [
+		"checkoutName",
+		"checkoutMobile",
+		"checkoutAddress",
+		"checkoutCity",
+		"checkoutPincode"
+	];
+
+
+	fields.forEach(
+		id => {
+
+			const field =
+				document.getElementById(
+					id
+				);
+
+
+			if (field) {
+
+				field.value =
+					"";
+			}
+
+		}
+	);
+
+
+	const message =
+		document.getElementById(
+			"checkoutMessage"
+		);
+
+
+	if (message) {
+
+		message.textContent =
+			"";
+
+		message.style.color =
+			"";
+	}
+}
+
+
+/* =========================
+   LOAD PENDING ORDER
+========================= */
+
+function loadBizmoPendingOrder() {
+
+	const saved =
+		sessionStorage.getItem(
+			"bizmoPendingOrder"
+		);
+
+
+	if (!saved) {
+		return;
+	}
+
+
+	try {
+
+		const parsed =
+			JSON.parse(
+				saved
+			);
+
+
+		if (
+			parsed &&
+			parsed.orderId
+		) {
+
+			bizmoPendingOrder =
+				parsed;
+		}
+
+	} catch (error) {
+
+		console.error(
+			"Pending order load error:",
+			error
+		);
+
+		sessionStorage.removeItem(
+			"bizmoPendingOrder"
+		);
+	}
+}
+
+
+/* =========================
+   FINALIZE ORDER
+========================= */
+
+function finalizeBizmoOrder() {
+
+	if (bizmoOrderSaving) {
+		return;
+	}
+
+
+	loadBizmoPendingOrder();
+
+
+	if (
+		!bizmoPendingOrder ||
+		!bizmoPendingOrder.orderId
+	) {
+
+		showToast(
+			"Order details not found. Please try again."
+		);
+
+		return;
+	}
+
+
+	bizmoOrderSaving =
+		true;
+
+
+	const order =
+		bizmoPendingOrder;
+
+
+	/*
+	 * Save in the background.
+	 *
+	 * sendBeacon/fetch does not wait for
+	 * the Apps Script response, so the
+	 * customer is not stuck on the popup.
+	 */
+
+	const saveQueued =
+		saveBizmoOrder(
+			order
+		);
+
+
+	if (!saveQueued) {
+
+		bizmoOrderSaving =
+			false;
+
+
+		showToast(
+			"Unable to save order. Please try again."
+		);
+
+
+		return;
+	}
+
+
+	/* =========================
+	   FINALIZE LOCAL ORDER STATE
+	========================= */
+
+	sessionStorage.removeItem(
+		"bizmoWhatsAppPending"
+	);
+
+	sessionStorage.removeItem(
+		"bizmoPendingOrder"
+	);
+
+
+	bizmoPendingOrder =
+		null;
+
+
+	bizmoWhatsAppLeftPage =
+		false;
+
+	bizmoOrderConfirmShown =
+		false;
+
+	bizmoWhatsAppOpenedAt =
+		0;
+
+
+	closeBizmoOrderConfirm();
+
+	closeBizmoEditConfirm();
+
+
+	/* CLEAR CART */
+
+	cart = [];
+
+
+	updateCartCount();
+
+	renderCart();
+
+	updateProductButtons();
+
+	updateComboButton();
+
+
+	/* CLEAR CUSTOMER DETAILS */
+
+	clearCheckoutDetails();
+
+
+	/* CLOSE CHECKOUT */
+
+	closeCheckout();
+
+
+	bizmoOrderSaving =
+		false;
+
+
+	/* =========================
+	   FINAL SUCCESS POPUP
+	========================= */
+
+	showBizmoOrderSuccess(
+		order.orderId
+	);
+}
+
+
+/* =========================
+   ORDER CONFIRMATION BUTTONS
+========================= */
+
+document.addEventListener(
+	"click",
+	e => {
+
+		/* ORDER SENT */
+
+		const orderSentButton =
+			e.target.closest(
+				"#orderSentBtn"
+			);
+
+
+		if (orderSentButton) {
+
+			e.preventDefault();
+
+			finalizeBizmoOrder();
+
+			return;
+		}
+
+
+		/* I WANT TO EDIT */
+
+		const editOrderButton =
+			e.target.closest(
+				"#editOrderBtn"
+			);
+
+
+		if (editOrderButton) {
+
+			e.preventDefault();
+
+			clearCheckoutStatus();
+
+
+			/*
+			 * Stop Popup 1 from appearing again.
+			 *
+			 * Cart and customer details
+			 * remain untouched.
+			 */
+
+			sessionStorage.removeItem(
+				"bizmoWhatsAppPending"
+			);
+
+
+			bizmoWhatsAppLeftPage =
+				false;
+
+			bizmoWhatsAppOpenedAt =
+				0;
+
+
+			closeBizmoOrderConfirm();
+
+			showBizmoEditConfirm();
+
+			return;
+		}
+
+
+		/* KEEP ORDER SENT */
+
+		const keepOrderSentButton =
+			e.target.closest(
+				"#keepOrderSentBtn"
+			);
+
+
+		if (keepOrderSentButton) {
+
+			e.preventDefault();
+
+			finalizeBizmoOrder();
+
+			return;
+		}
+
+
+		/* CONTINUE EDITING */
+
+		const continueEditingButton =
+			e.target.closest(
+				"#continueEditingBtn"
+			);
+
+
+		if (continueEditingButton) {
+
+			e.preventDefault();
+
+			clearCheckoutStatus();
+
+			closeBizmoEditConfirm();
+
+			updatePageScrollLock();
+
+			return;
+		}
+
+
+		/* SUCCESS POPUP X */
+
+		const successCloseX =
+			e.target.closest(
+				"#bizmoSuccessCloseX"
+			);
+
+
+		if (successCloseX) {
+
+			e.preventDefault();
+
+			closeBizmoOrderSuccess();
+
+			return;
+		}
+
+
+		/* SUCCESS POPUP CLOSE */
+
+		const successCloseButton =
+			e.target.closest(
+				"#bizmoSuccessCloseBtn"
+			);
+
+
+		if (successCloseButton) {
+
+			e.preventDefault();
+
+			closeBizmoOrderSuccess();
+
+			return;
+		}
+
+	},
+	true
+);
+
+
+/* =========================
+   WHATSAPP RETURN CHECK
+========================= */
+
+function checkBizmoWhatsAppReturn() {
+
+	const pending =
+		sessionStorage.getItem(
+			"bizmoWhatsAppPending"
+		);
+
+
+	if (
+		pending !== "true"
+	) {
+		return;
+	}
+
+
+	if (
+		!bizmoWhatsAppLeftPage
+	) {
+		return;
+	}
+
+
+	if (
+		bizmoOrderConfirmShown
+	) {
+		return;
+	}
+
+
+	if (
+		bizmoWhatsAppOpenedAt &&
+		Date.now() -
+			bizmoWhatsAppOpenedAt <
+			1500
+	) {
+		return;
+	}
+
+
+	bizmoWhatsAppLeftPage =
+		false;
+
+	clearCheckoutStatus();
+
+	showBizmoOrderConfirm();
+}
+
+
+/* =========================
+   PAGE / APP LEAVE
+========================= */
+
+function markBizmoWhatsAppLeftPage() {
+
+	const pending =
+		sessionStorage.getItem(
+			"bizmoWhatsAppPending"
+		);
+
+
+	if (
+		pending === "true"
+	) {
+
+		bizmoWhatsAppLeftPage =
+			true;
+	}
+}
+
+
+/* =========================
+   VISIBILITY CHANGE
+========================= */
+
+document.addEventListener(
+	"visibilitychange",
+	() => {
+
+		if (
+			document.visibilityState ===
+			"hidden"
+		) {
+
+			markBizmoWhatsAppLeftPage();
+
+			return;
+		}
+
+
+		if (
+			document.visibilityState ===
+			"visible"
+		) {
+
+			checkBizmoWhatsAppReturn();
+		}
+
+	}
+);
+
+
+/*
+ * IMPORTANT:
+ *
+ * Do NOT use window blur/focus here.
+ *
+ * Android can trigger blur/focus when
+ * the "Open with" WhatsApp chooser
+ * appears or disappears.
+ *
+ * visibilitychange is used instead.
+ */
 
 
 /* =========================
@@ -1715,13 +3792,17 @@ function showToast(text) {
 			"toast"
 		);
 
+
 	if (!toast) return;
 
 
 	toast.textContent =
 		text + " ✓";
 
-	toast.classList.add("show");
+
+	toast.classList.add(
+		"show"
+	);
 
 
 	setTimeout(
@@ -1749,27 +3830,31 @@ function filterProducts() {
 				"search"
 			)?.value || ""
 		)
-		.toLowerCase()
-		.trim();
+			.toLowerCase()
+			.trim();
 
 
 	document
 		.querySelectorAll(
 			".product-card"
 		)
-		.forEach(card => {
+		.forEach(
+			card => {
 
-			card.style.display =
-				(
-					card.dataset.name ||
-					""
-				)
-				.toLowerCase()
-				.includes(query)
-					? ""
-					: "none";
+				card.style.display =
+					(
+						card.dataset.name ||
+						""
+					)
+						.toLowerCase()
+						.includes(
+							query
+						)
+						? ""
+						: "none";
 
-		});
+			}
+		);
 }
 
 
@@ -1782,14 +3867,21 @@ function focusSearch() {
 
 
 	document
-		.getElementById("shop")
+		.getElementById(
+			"shop"
+		)
 		?.scrollIntoView({
-			behavior: "smooth"
+			behavior:
+				"smooth"
 		});
 
 
 	setTimeout(
-		() => search?.focus(),
+		() => {
+
+			search?.focus();
+
+		},
 		300
 	);
 }
@@ -1806,10 +3898,12 @@ function toggleMenu() {
 			"navMenu"
 		);
 
+
 	const button =
 		document.querySelector(
 			".mobile-menu"
 		);
+
 
 	if (!menu) return;
 
@@ -1824,6 +3918,9 @@ function toggleMenu() {
 		"menu-open",
 		isOpen
 	);
+
+
+	updatePageScrollLock();
 }
 
 
@@ -1839,8 +3936,11 @@ function highlightContact(e) {
 
 
 	contact?.scrollIntoView({
-		behavior: "smooth",
-		block: "center"
+		behavior:
+			"smooth",
+
+		block:
+			"center"
 	});
 
 
@@ -1851,7 +3951,9 @@ function highlightContact(e) {
 				"contact-highlight"
 			);
 
+
 			void contact.offsetWidth;
+
 
 			contact.classList.add(
 				"contact-highlight"
@@ -1937,9 +4039,14 @@ function sendQuery() {
 	);
 
 
-	nameInput.value = "";
-	mobileInput.value = "";
-	messageInput.value = "";
+	nameInput.value =
+		"";
+
+	mobileInput.value =
+		"";
+
+	messageInput.value =
+		"";
 }
 
 
@@ -1947,12 +4054,15 @@ function sendQuery() {
    PRODUCT VIEW
 ========================= */
 
-function setProductView(columns) {
+function setProductView(
+	columns
+) {
 
 	const productGrid =
 		document.querySelector(
 			".product-grid"
 		);
+
 
 	if (!productGrid) return;
 
@@ -1964,7 +4074,9 @@ function setProductView(columns) {
 
 
 	document
-		.getElementById("viewOne")
+		.getElementById(
+			"viewOne"
+		)
 		?.classList.toggle(
 			"active",
 			columns === 1
@@ -1972,7 +4084,9 @@ function setProductView(columns) {
 
 
 	document
-		.getElementById("viewTwo")
+		.getElementById(
+			"viewTwo"
+		)
 		?.classList.toggle(
 			"active",
 			columns === 2
@@ -1984,7 +4098,9 @@ function setProductView(columns) {
    CATEGORY FILTER
 ========================= */
 
-let selectedCategory = "";
+let selectedCategory =
+	"";
+
 
 const categoryProducts = {
 
@@ -2013,7 +4129,9 @@ const categoryProducts = {
 };
 
 
-function filterCategory(category) {
+function filterCategory(
+	category
+) {
 
 	if (
 		selectedCategory ===
@@ -2026,7 +4144,8 @@ function filterCategory(category) {
 	}
 
 
-	selectedCategory = category;
+	selectedCategory =
+		category;
 
 
 	const search =
@@ -2034,58 +4153,11 @@ function filterCategory(category) {
 			"search"
 		);
 
-	if (search) {
-		search.value = "";
-	}
-
-
-	document
-		.querySelectorAll(
-			".product-card"
-		)
-		.forEach(card => {
-
-			card.style.display =
-				(
-					categoryProducts[
-						category
-					] || []
-				)
-				.includes(
-					card.dataset.name
-				)
-					? ""
-					: "none";
-
-		});
-
-
-	updateCategorySelection();
-
-
-	document
-		.getElementById("shop")
-		?.scrollIntoView({
-			behavior: "smooth"
-		});
-
-
-	document.activeElement?.blur();
-}
-
-
-function showAllProducts() {
-
-	selectedCategory = "";
-
-
-	const search =
-		document.getElementById(
-			"search"
-		);
 
 	if (search) {
-		search.value = "";
+
+		search.value =
+			"";
 	}
 
 
@@ -2095,7 +4167,69 @@ function showAllProducts() {
 		)
 		.forEach(
 			card => {
-				card.style.display = "";
+
+				card.style.display =
+					(
+						categoryProducts[
+							category
+						] || []
+					)
+						.includes(
+							card.dataset.name
+						)
+						? ""
+						: "none";
+
+			}
+		);
+
+
+	updateCategorySelection();
+
+
+	document
+		.getElementById(
+			"shop"
+		)
+		?.scrollIntoView({
+			behavior:
+				"smooth"
+		});
+
+
+	document.activeElement?.blur();
+}
+
+
+function showAllProducts() {
+
+	selectedCategory =
+		"";
+
+
+	const search =
+		document.getElementById(
+			"search"
+		);
+
+
+	if (search) {
+
+		search.value =
+			"";
+	}
+
+
+	document
+		.querySelectorAll(
+			".product-card"
+		)
+		.forEach(
+			card => {
+
+				card.style.display =
+					"";
+
 			}
 		);
 
@@ -2196,6 +4330,7 @@ document.addEventListener(
 				"show"
 			);
 
+
 			document
 				.querySelector(
 					".mobile-menu"
@@ -2203,6 +4338,9 @@ document.addEventListener(
 				?.classList.remove(
 					"menu-open"
 				);
+
+
+			updatePageScrollLock();
 		}
 
 
@@ -2243,10 +4381,61 @@ document.addEventListener(
 	"keydown",
 	e => {
 
-		if (e.key === "Escape") {
+		if (
+			e.key ===
+			"Escape"
+		) {
+
+			const orderConfirmOpen =
+				document
+					.getElementById(
+						"bizmoOrderConfirm"
+					)
+					?.classList.contains(
+						"show"
+					);
+
+
+			const editConfirmOpen =
+				document
+					.getElementById(
+						"bizmoEditConfirm"
+					)
+					?.classList.contains(
+						"show"
+					);
+
+
+			const successOpen =
+				document
+					.getElementById(
+						"bizmoOrderSuccess"
+					)
+					?.classList.contains(
+						"show"
+					);
+
+
+			if (successOpen) {
+
+				closeBizmoOrderSuccess();
+
+				return;
+			}
+
+
+			if (
+				orderConfirmOpen ||
+				editConfirmOpen
+			) {
+				return;
+			}
+
 
 			closeProductOptions();
+
 			closeCart();
+
 			closeCheckout();
 
 		}
@@ -2259,14 +4448,24 @@ document.addEventListener(
    HERO SLIDER
 ========================= */
 
-let heroSlideIndex = 0;
-let heroStartX = 0;
-let heroCurrentX = 0;
-let heroDragging = false;
+let heroSlideIndex =
+	0;
+
+let heroStartX =
+	0;
+
+let heroCurrentX =
+	0;
+
+let heroDragging =
+	false;
+
 let heroAutoSlide;
 
 
-function goToHeroSlide(index) {
+function goToHeroSlide(
+	index
+) {
 
 	const slides =
 		document.querySelectorAll(
@@ -2279,10 +4478,13 @@ function goToHeroSlide(index) {
 		);
 
 
-	if (!slides.length) return;
+	if (!slides.length) {
+		return;
+	}
 
 
 	if (index < 0) {
+
 		index =
 			slides.length - 1;
 	}
@@ -2293,7 +4495,8 @@ function goToHeroSlide(index) {
 		slides.length
 	) {
 
-		index = 0;
+		index =
+			0;
 	}
 
 
@@ -2335,7 +4538,8 @@ function goToHeroSlide(index) {
 	);
 
 
-	heroSlideIndex = index;
+	heroSlideIndex =
+		index;
 }
 
 
@@ -2357,7 +4561,9 @@ function startHeroAutoSlide() {
 	heroAutoSlide =
 		setInterval(
 			() => {
+
 				nextHeroSlide();
+
 			},
 			4500
 		);
@@ -2371,6 +4577,7 @@ function initializeHeroSlider() {
 			"heroBanner"
 		);
 
+
 	if (!hero) return;
 
 
@@ -2382,7 +4589,8 @@ function initializeHeroSlider() {
 				heroCurrentX =
 					e.touches[0].clientX;
 
-			heroDragging = true;
+			heroDragging =
+				true;
 
 		},
 		{
@@ -2395,7 +4603,9 @@ function initializeHeroSlider() {
 		"touchmove",
 		e => {
 
-			if (heroDragging) {
+			if (
+				heroDragging
+			) {
 
 				heroCurrentX =
 					e.touches[0].clientX;
@@ -2412,7 +4622,9 @@ function initializeHeroSlider() {
 		"touchend",
 		() => {
 
-			if (!heroDragging) return;
+			if (!heroDragging) {
+				return;
+			}
 
 
 			const distance =
@@ -2420,21 +4632,25 @@ function initializeHeroSlider() {
 				heroStartX;
 
 
-			heroDragging = false;
+			heroDragging =
+				false;
 
 
 			if (
 				Math.abs(distance) >= 50
 			) {
 
-				if (distance < 0) {
+				if (
+					distance < 0
+				) {
 
 					nextHeroSlide();
 
 				} else {
 
 					goToHeroSlide(
-						heroSlideIndex - 1
+						heroSlideIndex -
+							1
 					);
 				}
 
@@ -2454,7 +4670,8 @@ function initializeHeroSlider() {
 				heroCurrentX =
 					e.clientX;
 
-			heroDragging = true;
+			heroDragging =
+				true;
 
 		}
 	);
@@ -2464,7 +4681,9 @@ function initializeHeroSlider() {
 		"mousemove",
 		e => {
 
-			if (heroDragging) {
+			if (
+				heroDragging
+			) {
 
 				heroCurrentX =
 					e.clientX;
@@ -2478,7 +4697,9 @@ function initializeHeroSlider() {
 		"mouseup",
 		() => {
 
-			if (!heroDragging) return;
+			if (!heroDragging) {
+				return;
+			}
 
 
 			const distance =
@@ -2486,21 +4707,25 @@ function initializeHeroSlider() {
 				heroStartX;
 
 
-			heroDragging = false;
+			heroDragging =
+				false;
 
 
 			if (
 				Math.abs(distance) >= 50
 			) {
 
-				if (distance < 0) {
+				if (
+					distance < 0
+				) {
 
 					nextHeroSlide();
 
 				} else {
 
 					goToHeroSlide(
-						heroSlideIndex - 1
+						heroSlideIndex -
+							1
 					);
 				}
 
@@ -2516,12 +4741,16 @@ function initializeHeroSlider() {
 		"mouseleave",
 		() => {
 
-			heroDragging = false;
+			heroDragging =
+				false;
+
 		}
 	);
 
 
-	goToHeroSlide(0);
+	goToHeroSlide(
+		0
+	);
 
 	startHeroAutoSlide();
 }
@@ -2565,14 +4794,20 @@ function initializeComboSlider() {
 				() => {
 
 					const card =
-						comboCards[index];
+						comboCards[
+							index
+						];
 
-					if (!card) return;
+
+					if (!card) {
+						return;
+					}
 
 
 					comboSlider.scrollTo({
 						left:
 							card.offsetLeft,
+
 						behavior:
 							"smooth"
 					});
@@ -2587,17 +4822,21 @@ function initializeComboSlider() {
 	const updateActiveComboDot =
 		() => {
 
-			if (!comboDots.length) {
+			if (
+				!comboDots.length
+			) {
 				return;
 			}
 
 
 			const sliderCenter =
 				comboSlider.scrollLeft +
-				comboSlider.clientWidth / 2;
+				comboSlider.clientWidth /
+					2;
 
 
-			let activeIndex = 0;
+			let activeIndex =
+				0;
 
 			let smallestDistance =
 				Infinity;
@@ -2608,7 +4847,8 @@ function initializeComboSlider() {
 
 					const cardCenter =
 						card.offsetLeft +
-						card.offsetWidth / 2;
+						card.offsetWidth /
+							2;
 
 
 					const distance =
@@ -2639,7 +4879,8 @@ function initializeComboSlider() {
 
 					dot.classList.toggle(
 						"active",
-						index === activeIndex
+						index ===
+							activeIndex
 					);
 
 				}
@@ -2664,6 +4905,13 @@ function initializeComboSlider() {
 document.addEventListener(
 	"DOMContentLoaded",
 	() => {
+
+		ensureBizmoOrderConfirmPopups();
+
+		ensureBizmoSuccessPopup();
+
+		loadBizmoPendingOrder();
+
 
 		updateCartCount();
 
@@ -2699,6 +4947,7 @@ document.addEventListener(
 									"show"
 								);
 
+
 							document
 								.querySelector(
 									".mobile-menu"
@@ -2706,6 +4955,9 @@ document.addEventListener(
 								?.classList.remove(
 									"menu-open"
 								);
+
+
+							updatePageScrollLock();
 
 						}
 					);
@@ -2715,6 +4967,7 @@ document.addEventListener(
 
 	}
 );
+
 
 /* =========================
    BACK TO TOP
@@ -2730,15 +4983,20 @@ document.addEventListener(
 				"backToTop"
 			);
 
-		if (!backToTop) return;
+
+		if (!backToTop) {
+			return;
+		}
+
 
 		let hideTimer;
 
 
 		function showBackToTop() {
 
-			/* Don't show at the very top */
-			if (window.scrollY <= 300) {
+			if (
+				window.scrollY <= 300
+			) {
 
 				backToTop.classList.remove(
 					"show"
@@ -2747,13 +5005,16 @@ document.addEventListener(
 				return;
 			}
 
+
 			backToTop.classList.add(
 				"show"
 			);
 
 
-			/* Hide when scrolling stops */
-			clearTimeout(hideTimer);
+			clearTimeout(
+				hideTimer
+			);
+
 
 			hideTimer =
 				setTimeout(
@@ -2782,25 +5043,34 @@ document.addEventListener(
 			"click",
 			() => {
 
-				clearTimeout(hideTimer);
+				clearTimeout(
+					hideTimer
+				);
+
 
 				window.scrollTo({
-					top: 0,
-					left: 0,
-					behavior: "smooth"
+					top:
+						0,
+
+					left:
+						0,
+
+					behavior:
+						"smooth"
 				});
 
 			}
 		);
 
 
-		/* Start hidden */
 		backToTop.classList.remove(
 			"show"
 		);
 
 	}
 );
+
+
 /* =========================
    FAQ ACCORDION
 ========================= */
@@ -2814,458 +5084,1516 @@ document.addEventListener(
 				".faq-item"
 			);
 
-		faqItems.forEach(item => {
 
-			const question =
-				item.querySelector(
-					".faq-question"
-				);
+		faqItems.forEach(
+			item => {
 
-			const icon =
-				item.querySelector(
-					".faq-icon"
-				);
+				const question =
+					item.querySelector(
+						".faq-question"
+					);
 
-			if (!question) return;
-
-
-			question.addEventListener(
-				"click",
-				() => {
-
-					const isOpen =
-						item.classList.contains(
-							"active"
-						);
+				const icon =
+					item.querySelector(
+						".faq-icon"
+					);
 
 
-					/* Close all FAQs */
+				if (!question) {
+					return;
+				}
 
-					faqItems.forEach(
-						otherItem => {
 
-							otherItem.classList.remove(
+				question.addEventListener(
+					"click",
+					() => {
+
+						const isOpen =
+							item.classList.contains(
 								"active"
 							);
 
-							const otherIcon =
-								otherItem.querySelector(
-									".faq-icon"
+
+						faqItems.forEach(
+							otherItem => {
+
+								otherItem.classList.remove(
+									"active"
 								);
 
-							if (otherIcon) {
-								otherIcon.textContent =
-									"+";
+
+								const otherIcon =
+									otherItem.querySelector(
+										".faq-icon"
+									);
+
+
+								if (
+									otherIcon
+								) {
+
+									otherIcon.textContent =
+										"+";
+								}
+
 							}
+						);
+
+
+						if (!isOpen) {
+
+							item.classList.add(
+								"active"
+							);
+
+
+							if (icon) {
+
+								icon.textContent =
+									"−";
+							}
+
+						}
+
+					}
+				);
+
+			}
+		);
+
+	}
+);
+
+
+/* =========================
+   CUSTOMER REVIEWS
+   LIVE GOOGLE SHEET
+========================= */
+
+document.addEventListener(
+	"DOMContentLoaded",
+	() => {
+
+		const SHEET_URL =
+			"https://docs.google.com/spreadsheets/d/e/2PACX-1vSmXiutzdxicv_r8FD0pPAfLgzHbqS0CQARbPwiS6jsehoIMgm4WuVdSaiSkBboHOx4ejqvj8x48njU/pub?gid=0&single=true&output=csv";
+
+
+		const slider =
+			document.getElementById(
+				"reviewsSlider"
+			);
+
+		const dotsContainer =
+			document.getElementById(
+				"reviewDots"
+			);
+
+		const prevButton =
+			document.querySelector(
+				".review-prev"
+			);
+
+		const nextButton =
+			document.querySelector(
+				".review-next"
+			);
+
+		const stats =
+			document.getElementById(
+				"reviewStats"
+			);
+
+
+		if (
+			!slider ||
+			!dotsContainer
+		) {
+			return;
+		}
+
+
+		let reviews = [];
+
+		let currentReview =
+			0;
+
+
+		/* =========================
+		   CSV PARSER
+		========================= */
+
+		function parseCSV(text) {
+
+			const rows = [];
+
+			let row = [];
+
+			let value = "";
+
+			let insideQuotes =
+				false;
+
+
+			for (
+				let i = 0;
+				i < text.length;
+				i++
+			) {
+
+				const char =
+					text[i];
+
+				const next =
+					text[i + 1];
+
+
+				if (
+					char === '"' &&
+					insideQuotes &&
+					next === '"'
+				) {
+
+					value += '"';
+
+					i++;
+
+					continue;
+				}
+
+
+				if (
+					char === '"'
+				) {
+
+					insideQuotes =
+						!insideQuotes;
+
+					continue;
+				}
+
+
+				if (
+					char === "," &&
+					!insideQuotes
+				) {
+
+					row.push(
+						value.trim()
+					);
+
+					value =
+						"";
+
+					continue;
+				}
+
+
+				if (
+					(
+						char === "\n" ||
+						char === "\r"
+					) &&
+					!insideQuotes
+				) {
+
+					if (
+						char === "\r" &&
+						next === "\n"
+					) {
+
+						i++;
+					}
+
+
+					row.push(
+						value.trim()
+					);
+
+
+					if (
+						row.some(
+							cell =>
+								cell !== ""
+						)
+					) {
+
+						rows.push(
+							row
+						);
+					}
+
+
+					row = [];
+
+					value =
+						"";
+
+					continue;
+				}
+
+
+				value +=
+					char;
+			}
+
+
+			if (
+				value !== "" ||
+				row.length
+			) {
+
+				row.push(
+					value.trim()
+				);
+
+
+				if (
+					row.some(
+						cell =>
+							cell !== ""
+					)
+				) {
+
+					rows.push(
+						row
+					);
+				}
+			}
+
+
+			return rows;
+		}
+
+
+		/* =========================
+		   REVIEW STARS
+		========================= */
+
+		function createStars(
+			rating
+		) {
+
+			const number =
+				Math.max(
+					0,
+					Math.min(
+						5,
+						Number(
+							rating
+						) || 0
+					)
+				);
+
+
+			return (
+				"★".repeat(
+					number
+				) +
+				"☆".repeat(
+					5 - number
+				)
+			);
+		}
+
+
+		/* =========================
+		   ESCAPE HTML
+		========================= */
+
+		function escapeHTML(
+			value
+		) {
+
+			return String(
+				value ?? ""
+			)
+				.replace(
+					/&/g,
+					"&amp;"
+				)
+				.replace(
+					/</g,
+					"&lt;"
+				)
+				.replace(
+					/>/g,
+					"&gt;"
+				)
+				.replace(
+					/"/g,
+					"&quot;"
+				)
+				.replace(
+					/'/g,
+					"&#039;"
+				);
+		}
+
+
+		/* =========================
+		   RENDER REVIEWS
+		========================= */
+
+		function renderReviews() {
+
+			slider.innerHTML =
+				"";
+
+			dotsContainer.innerHTML =
+				"";
+
+
+			if (
+				!reviews.length
+			) {
+
+				slider.innerHTML = `
+					<article class="review-card active">
+
+						<div class="review-stars">
+							☆☆☆☆☆
+						</div>
+
+						<p class="review-text">
+							Customer reviews will appear here soon.
+						</p>
+
+						<div class="review-author">
+
+							<div class="review-avatar">
+								B
+							</div>
+
+							<div>
+
+								<strong>
+									Bizmo Chemicals
+								</strong>
+
+								<small>
+									Customer Reviews
+								</small>
+
+							</div>
+
+						</div>
+
+					</article>
+				`;
+
+				return;
+			}
+
+
+			reviews.forEach(
+				(review, index) => {
+
+					const firstLetter =
+						(
+							review.name ||
+							"C"
+						)
+							.charAt(0)
+							.toUpperCase();
+
+
+					const card =
+						document.createElement(
+							"article"
+						);
+
+
+					card.className =
+						`review-card ${
+							index === 0
+								? "active"
+								: ""
+						}`;
+
+
+					card.innerHTML = `
+
+						<div class="review-stars">
+							${createStars(
+								review.rating
+							)}
+						</div>
+
+						<p class="review-text">
+							${escapeHTML(
+								review.text
+							)}
+						</p>
+
+						<div class="review-author">
+
+							<div class="review-avatar">
+								${escapeHTML(
+									firstLetter
+								)}
+							</div>
+
+							<div>
+
+								<strong>
+									${escapeHTML(
+										review.name
+									)}
+								</strong>
+
+								<small>
+									${escapeHTML(
+										review.product
+									)}
+								</small>
+
+							</div>
+
+						</div>
+
+					`;
+
+
+					slider.appendChild(
+						card
+					);
+
+
+					const dot =
+						document.createElement(
+							"button"
+						);
+
+
+					dot.className =
+						`review-dot ${
+							index === 0
+								? "active"
+								: ""
+						}`;
+
+
+					dot.type =
+						"button";
+
+
+					dot.setAttribute(
+						"aria-label",
+						`Review ${index + 1}`
+					);
+
+
+					dot.addEventListener(
+						"click",
+						() => {
+
+							showReview(
+								index
+							);
 
 						}
 					);
 
 
-					/* Open selected FAQ */
-
-					if (!isOpen) {
-
-						item.classList.add(
-							"active"
-						);
-
-						if (icon) {
-							icon.textContent =
-								"−";
-						}
-
-					}
+					dotsContainer.appendChild(
+						dot
+					);
 
 				}
 			);
 
-		});
+
+			currentReview =
+				0;
+		}
+
+
+		/* =========================
+		   SHOW REVIEW
+		========================= */
+
+		function showReview(
+			index
+		) {
+
+			const cards =
+				slider.querySelectorAll(
+					".review-card"
+				);
+
+			const dots =
+				dotsContainer.querySelectorAll(
+					".review-dot"
+				);
+
+
+			if (!cards.length) {
+				return;
+			}
+
+
+			currentReview =
+				(
+					index +
+					cards.length
+				) %
+				cards.length;
+
+
+			cards.forEach(
+				(card, i) => {
+
+					card.classList.toggle(
+						"active",
+						i ===
+							currentReview
+					);
+
+				}
+			);
+
+
+			dots.forEach(
+				(dot, i) => {
+
+					dot.classList.toggle(
+						"active",
+						i ===
+							currentReview
+					);
+
+				}
+			);
+		}
+
+
+		/* =========================
+		   PREVIOUS REVIEW
+		========================= */
+
+		if (prevButton) {
+
+			prevButton.addEventListener(
+				"click",
+				() => {
+
+					showReview(
+						currentReview -
+							1
+					);
+
+				}
+			);
+		}
+
+
+		/* =========================
+		   NEXT REVIEW
+		========================= */
+
+		if (nextButton) {
+
+			nextButton.addEventListener(
+				"click",
+				() => {
+
+					showReview(
+						currentReview +
+							1
+					);
+
+				}
+			);
+		}
+
+
+		/* =========================
+		   MOBILE SWIPE
+		========================= */
+
+		let touchStartX =
+			0;
+
+
+		slider.addEventListener(
+			"touchstart",
+			event => {
+
+				touchStartX =
+					event
+						.changedTouches[0]
+						.screenX;
+
+			},
+			{
+				passive: true
+			}
+		);
+
+
+		slider.addEventListener(
+			"touchend",
+			event => {
+
+				const touchEndX =
+					event
+						.changedTouches[0]
+						.screenX;
+
+
+				const distance =
+					touchEndX -
+					touchStartX;
+
+
+				if (
+					Math.abs(
+						distance
+					) < 50
+				) {
+					return;
+				}
+
+
+				if (
+					distance < 0
+				) {
+
+					showReview(
+						currentReview +
+							1
+					);
+
+				} else {
+
+					showReview(
+						currentReview -
+							1
+					);
+				}
+
+			},
+			{
+				passive: true
+			}
+		);
+
+
+		/* =========================
+		   REVIEW STATS
+		   GOOGLE SHEET G:H
+		========================= */
+
+		function setMetricTarget(
+			metrics,
+			metricName,
+			target
+		) {
+
+			if (!stats) {
+				return;
+			}
+
+
+			const counter =
+				Array.from(
+					stats.querySelectorAll(
+						".review-count"
+					)
+				).find(
+					element =>
+						element.dataset
+							.metric ===
+						metricName
+				);
+
+
+			if (!counter) {
+				return;
+			}
+
+
+			const number =
+				Number(
+					String(target)
+						.replace(
+							/,/g,
+							""
+						)
+						.trim()
+				);
+
+
+			if (
+				Number.isFinite(
+					number
+				)
+			) {
+
+				counter.dataset.target =
+					number;
+
+				counter.textContent =
+					number.toLocaleString() +
+					"+";
+			}
+		}
+
+
+		function loadMetrics(
+			rows
+		) {
+
+			if (
+				!stats ||
+				!rows.length
+			) {
+				return;
+			}
+
+
+			const headers =
+				rows[0].map(
+					header =>
+						header
+							.trim()
+							.toLowerCase()
+				);
+
+
+			const metricIndex =
+				headers.indexOf(
+					"metric"
+				);
+
+
+			const countIndex =
+				headers.indexOf(
+					"count"
+				);
+
+
+			if (
+				metricIndex === -1 ||
+				countIndex === -1
+			) {
+
+				console.warn(
+					"Metric / Count columns not found."
+				);
+
+				return;
+			}
+
+
+			const metrics =
+				{};
+
+
+			rows
+				.slice(1)
+				.forEach(
+					row => {
+
+						const metric =
+							(
+								row[
+									metricIndex
+								] ||
+								""
+							)
+								.trim()
+								.toLowerCase();
+
+
+						const count =
+							(
+								row[
+									countIndex
+								] ||
+								""
+							).trim();
+
+
+						if (metric) {
+
+							metrics[
+								metric
+							] =
+								count;
+						}
+
+					}
+				);
+
+
+			setMetricTarget(
+				metrics,
+				"product reviews",
+				metrics[
+					"product reviews"
+				]
+			);
+
+
+			setMetricTarget(
+				metrics,
+				"happy families",
+				metrics[
+					"happy families"
+				]
+			);
+
+
+			setMetricTarget(
+				metrics,
+				"products sold",
+				metrics[
+					"products sold"
+				]
+			);
+		}
+
+
+		/* =========================
+		   RUNNING COUNT
+		========================= */
+
+		let statsStarted =
+			false;
+
+
+		function animateCount(
+			element
+		) {
+
+			const target =
+				Number(
+					element.dataset.target
+				);
+
+
+			if (
+				!Number.isFinite(
+					target
+				)
+			) {
+				return;
+			}
+
+
+			const duration =
+				1600;
+
+
+			const startTime =
+				performance.now();
+
+
+			function updateCount(
+				currentTime
+			) {
+
+				const elapsed =
+					currentTime -
+					startTime;
+
+
+				const progress =
+					Math.min(
+						elapsed /
+							duration,
+						1
+					);
+
+
+				const eased =
+					1 -
+					Math.pow(
+						1 - progress,
+						3
+					);
+
+
+				const current =
+					Math.floor(
+						target *
+						eased
+					);
+
+
+				element.textContent =
+					current.toLocaleString() +
+					"+";
+
+
+				if (
+					progress < 1
+				) {
+
+					requestAnimationFrame(
+						updateCount
+					);
+
+				} else {
+
+					element.textContent =
+						target.toLocaleString() +
+						"+";
+				}
+			}
+
+
+			requestAnimationFrame(
+				updateCount
+			);
+		}
+
+
+		function startStatsAnimation() {
+
+			if (
+				!stats ||
+				statsStarted
+			) {
+				return;
+			}
+
+
+			statsStarted =
+				true;
+
+
+			const counters =
+				stats.querySelectorAll(
+					".review-count"
+				);
+
+
+			counters.forEach(
+				animateCount
+			);
+		}
+
+
+		if (stats) {
+
+			const statsObserver =
+				new IntersectionObserver(
+					entries => {
+
+						entries.forEach(
+							entry => {
+
+								if (
+									entry.isIntersecting
+								) {
+
+									startStatsAnimation();
+
+									statsObserver.disconnect();
+								}
+
+							}
+						);
+
+					},
+					{
+						threshold:
+							0.35
+					}
+				);
+
+
+			statsObserver.observe(
+				stats
+			);
+		}
+
+
+		/* =========================
+		   LOAD GOOGLE SHEET
+		========================= */
+
+		fetch(
+			SHEET_URL
+		)
+			.then(
+				response => {
+
+					if (
+						!response.ok
+					) {
+
+						throw new Error(
+							"Unable to load review sheet"
+						);
+					}
+
+
+					return response.text();
+
+				}
+			)
+			.then(
+				csv => {
+
+					const rows =
+						parseCSV(
+							csv
+						);
+
+
+					if (
+						rows.length < 2
+					) {
+
+						renderReviews();
+
+						return;
+					}
+
+
+					loadMetrics(
+						rows
+					);
+
+
+					const headers =
+						rows[0].map(
+							header =>
+								header
+									.trim()
+									.toLowerCase()
+						);
+
+
+					const nameIndex =
+						headers.indexOf(
+							"name"
+						);
+
+					const productIndex =
+						headers.indexOf(
+							"product"
+						);
+
+					const ratingIndex =
+						headers.indexOf(
+							"rating"
+						);
+
+					const reviewIndex =
+						headers.indexOf(
+							"review"
+						);
+
+					const showIndex =
+						headers.indexOf(
+							"show"
+						);
+
+
+					reviews =
+						rows
+							.slice(1)
+							.map(
+								row => ({
+
+									name:
+										row[
+											nameIndex
+										] ||
+										"",
+
+									product:
+										row[
+											productIndex
+										] ||
+										"",
+
+									rating:
+										row[
+											ratingIndex
+										] ||
+										"0",
+
+									text:
+										row[
+											reviewIndex
+										] ||
+										"",
+
+									show:
+										row[
+											showIndex
+										] ||
+										""
+
+								})
+							)
+							.filter(
+								review =>
+									review.show
+										.trim()
+										.toLowerCase() ===
+									"yes"
+							)
+							.filter(
+								review =>
+									review.name &&
+									review.text
+							)
+							.slice(-5)
+							.reverse();
+
+
+					renderReviews();
+
+				}
+			)
+			.catch(
+				error => {
+
+					console.error(
+						"Review loading error:",
+						error
+					);
+
+
+					renderReviews();
+
+				}
+			);
+
+	}
+);
+
+
+/* =========================
+   AUTO REVIEW SLIDER
+========================= */
+
+setInterval(
+	() => {
+
+		const nextButton =
+			document.querySelector(
+				".review-next"
+			);
+
+
+		if (nextButton) {
+
+			nextButton.click();
+		}
+
+	},
+	5000
+);
+
+
+/* =========================
+   REVIEW STATS COUNT
+========================= */
+
+document.addEventListener(
+	"DOMContentLoaded",
+	() => {
+
+		const stats =
+			document.getElementById(
+				"reviewStats"
+			);
+
+
+		if (!stats) {
+			return;
+		}
+
+
+		let started =
+			false;
+
+
+		function animateCount(
+			element
+		) {
+
+			const target =
+				Number(
+					element.dataset.target
+				);
+
+
+			const duration =
+				1600;
+
+
+			const startTime =
+				performance.now();
+
+
+			function updateCount(
+				currentTime
+			) {
+
+				const elapsed =
+					currentTime -
+					startTime;
+
+
+				const progress =
+					Math.min(
+						elapsed /
+							duration,
+						1
+					);
+
+
+				const eased =
+					1 -
+					Math.pow(
+						1 - progress,
+						3
+					);
+
+
+				const current =
+					Math.floor(
+						target *
+						eased
+					);
+
+
+				element.textContent =
+					current.toLocaleString() +
+					"+";
+
+
+				if (
+					progress < 1
+				) {
+
+					requestAnimationFrame(
+						updateCount
+					);
+
+				} else {
+
+					element.textContent =
+						target.toLocaleString() +
+						"+";
+				}
+			}
+
+
+			requestAnimationFrame(
+				updateCount
+			);
+		}
+
+
+		const statsObserver =
+			new IntersectionObserver(
+				entries => {
+
+					entries.forEach(
+						entry => {
+
+							if (
+								entry.isIntersecting &&
+								!started
+							) {
+
+								started =
+									true;
+
+
+								const counters =
+									stats.querySelectorAll(
+										".review-count"
+									);
+
+
+								counters.forEach(
+									animateCount
+								);
+
+
+								statsObserver.disconnect();
+							}
+
+						}
+					);
+
+				},
+				{
+					threshold:
+						0.35
+				}
+			);
+
+
+		statsObserver.observe(
+			stats
+		);
 
 	}
 );
 /* =========================
-   CUSTOMER REVIEWS - LIVE GOOGLE SHEET
+   PINCODE-BASED COD RESTRICTION
+   COD is available ONLY for 630702.
+   Every other pincode: Online Payment only.
 ========================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+const BIZMO_COD_PINCODE = "630702";
 
-  const SHEET_URL =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSmXiutzdxicv_r8FD0pPAfLgzHbqS0CQARbPwiS6jsehoIMgm4WuVdSaiSkBboHOx4ejqvj8x48njU/pub?gid=0&single=true&output=csv";
 
-  const slider = document.getElementById("reviewsSlider");
-  const dotsContainer = document.getElementById("reviewDots");
-  const prevButton = document.querySelector(".review-prev");
-  const nextButton = document.querySelector(".review-next");
+function getCheckoutPincodeValue() {
 
-  if (!slider || !dotsContainer) return;
+	const field =
+		document.getElementById(
+			"checkoutPincode"
+		);
 
-  let reviews = [];
-  let currentReview = 0;
+	if (!field) return "";
 
-  function parseCSV(text) {
+	return String(field.value || "")
+		.replace(/\D/g, "")
+		.trim();
+}
 
-    const rows = [];
-    let row = [];
-    let value = "";
-    let insideQuotes = false;
 
-    for (let i = 0; i < text.length; i++) {
+function isCodPincodeAllowed() {
 
-      const char = text[i];
-      const next = text[i + 1];
+	return getCheckoutPincodeValue() ===
+		BIZMO_COD_PINCODE;
+}
 
-      if (char === '"' && insideQuotes && next === '"') {
-        value += '"';
-        i++;
-        continue;
-      }
 
-      if (char === '"') {
-        insideQuotes = !insideQuotes;
-        continue;
-      }
+function updateCodAvailability() {
 
-      if (char === "," && !insideQuotes) {
-        row.push(value.trim());
-        value = "";
-        continue;
-      }
+	const codInput =
+		document.getElementById(
+			"codPayment"
+		);
 
-      if ((char === "\n" || char === "\r") && !insideQuotes) {
+	const onlineInput =
+		document.getElementById(
+			"onlinePayment"
+		);
 
-        if (char === "\r" && next === "\n") {
-          i++;
-        }
+	const codOption =
+		document.getElementById(
+			"codOption"
+		);
 
-        row.push(value.trim());
+	const message =
+		document.getElementById(
+			"codRestrictionMessage"
+		);
 
-        if (row.some(cell => cell !== "")) {
-          rows.push(row);
-        }
 
-        row = [];
-        value = "";
-        continue;
-      }
+	if (
+		!codInput ||
+		!onlineInput
+	) {
+		return;
+	}
 
-      value += char;
-    }
 
-    if (value !== "" || row.length) {
-      row.push(value.trim());
+	const pin =
+		getCheckoutPincodeValue();
 
-      if (row.some(cell => cell !== "")) {
-        rows.push(row);
-      }
-    }
+	const hasFullPin =
+		pin.length === 6;
 
-    return rows;
-  }
+	const allowed =
+		pin ===
+			BIZMO_COD_PINCODE;
 
 
-  function createStars(rating) {
+	/*
+	 * Restrict COD only AFTER the customer types
+	 * a COMPLETE 6-digit pincode that is not 630702.
+	 *
+	 * Typing (under 6 digits) or empty field ->
+	 * both options visible and selectable, no message.
+	 */
 
-    const number = Math.max(
-      0,
-      Math.min(5, Number(rating) || 0)
-    );
+	const restrict =
+		hasFullPin &&
+		!allowed;
 
-    return "★".repeat(number) + "☆".repeat(5 - number);
-  }
 
+	codInput.disabled =
+		restrict;
 
-  function escapeHTML(value) {
 
-    return String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
+	if (codOption) {
 
+		codOption.classList.toggle(
+			"cod-unavailable",
+			restrict
+		);
+	}
 
-  function renderReviews() {
 
-    slider.innerHTML = "";
-    dotsContainer.innerHTML = "";
+	if (message) {
 
-    if (!reviews.length) {
+		message.style.display =
+			restrict
+				? "block"
+				: "none";
+	}
 
-      slider.innerHTML = `
-        <article class="review-card active">
-          <div class="review-stars">☆☆☆☆☆</div>
 
-          <p class="review-text">
-            Customer reviews will appear here soon.
-          </p>
+	/*
+	 * If the customer had COD selected and then
+	 * types an invalid pincode, automatically
+	 * switch them to Online Payment.
+	 */
 
-          <div class="review-author">
-            <div class="review-avatar">B</div>
+	if (
+		restrict &&
+		codInput.checked
+	) {
 
-            <div>
-              <strong>Bizmo Chemicals</strong>
-              <small>Customer Reviews</small>
-            </div>
-          </div>
-        </article>
-      `;
+		codInput.checked =
+			false;
 
-      return;
-    }
+		onlineInput.checked =
+			true;
+	}
+}
 
 
-    reviews.forEach((review, index) => {
+/* Hook into checkout open + pincode typing */
 
-      const firstLetter =
-        (review.name || "C").charAt(0).toUpperCase();
+document.addEventListener(
+	"DOMContentLoaded",
+	() => {
 
-      const card = document.createElement("article");
+		const pincodeField =
+			document.getElementById(
+				"checkoutPincode"
+			);
 
-      card.className =
-        `review-card ${index === 0 ? "active" : ""}`;
 
-      card.innerHTML = `
-        <div class="review-stars">
-          ${createStars(review.rating)}
-        </div>
+		if (pincodeField) {
 
-        <p class="review-text">
-          ${escapeHTML(review.text)}
-        </p>
+			pincodeField.addEventListener(
+				"input",
+				updateCodAvailability
+			);
 
-        <div class="review-author">
+			pincodeField.addEventListener(
+				"change",
+				updateCodAvailability
+			);
+		}
 
-          <div class="review-avatar">
-            ${escapeHTML(firstLetter)}
-          </div>
+	}
+);
 
-          <div>
-            <strong>
-              ${escapeHTML(review.name)}
-            </strong>
-
-            <small>
-              ${escapeHTML(review.product)}
-            </small>
-          </div>
-
-        </div>
-      `;
-
-      slider.appendChild(card);
-
-
-      const dot = document.createElement("button");
-
-      dot.className =
-        `review-dot ${index === 0 ? "active" : ""}`;
-
-      dot.type = "button";
-
-      dot.setAttribute(
-        "aria-label",
-        `Review ${index + 1}`
-      );
-
-      dot.addEventListener("click", () => {
-        showReview(index);
-      });
-
-      dotsContainer.appendChild(dot);
-
-    });
-
-    currentReview = 0;
-  }
-
-
-  function showReview(index) {
-
-    const cards =
-      slider.querySelectorAll(".review-card");
-
-    const dots =
-      dotsContainer.querySelectorAll(".review-dot");
-
-    if (!cards.length) return;
-
-    currentReview =
-      (index + cards.length) % cards.length;
-
-    cards.forEach((card, i) => {
-
-      card.classList.toggle(
-        "active",
-        i === currentReview
-      );
-
-    });
-
-    dots.forEach((dot, i) => {
-
-      dot.classList.toggle(
-        "active",
-        i === currentReview
-      );
-
-    });
-  }
-
-
-  if (prevButton) {
-
-    prevButton.addEventListener("click", () => {
-
-      showReview(currentReview - 1);
-
-    });
-
-  }
-
-
-  if (nextButton) {
-
-    nextButton.addEventListener("click", () => {
-
-      showReview(currentReview + 1);
-
-    });
-
-  }
-
-
-  /* Mobile swipe */
-
-  let touchStartX = 0;
-
-  slider.addEventListener(
-    "touchstart",
-    event => {
-
-      touchStartX =
-        event.changedTouches[0].screenX;
-
-    },
-    { passive: true }
-  );
-
-
-  slider.addEventListener(
-    "touchend",
-    event => {
-
-      const touchEndX =
-        event.changedTouches[0].screenX;
-
-      const distance =
-        touchEndX - touchStartX;
-
-      if (Math.abs(distance) < 50) return;
-
-      if (distance < 0) {
-        showReview(currentReview + 1);
-      } else {
-        showReview(currentReview - 1);
-      }
-
-    },
-    { passive: true }
-  );
-
-
-  /* Load reviews from Google Sheet */
-
-  fetch(SHEET_URL)
-    .then(response => {
-
-      if (!response.ok) {
-        throw new Error("Unable to load review sheet");
-      }
-
-      return response.text();
-
-    })
-    .then(csv => {
-
-      const rows = parseCSV(csv);
-
-      if (rows.length < 2) {
-        renderReviews();
-        return;
-      }
-
-      const headers =
-        rows[0].map(header =>
-          header.trim().toLowerCase()
-        );
-
-
-      const nameIndex =
-        headers.indexOf("name");
-
-      const productIndex =
-        headers.indexOf("product");
-
-      const ratingIndex =
-        headers.indexOf("rating");
-
-      const reviewIndex =
-        headers.indexOf("review");
-
-      const showIndex =
-        headers.indexOf("show");
-
-
-      reviews = rows
-        .slice(1)
-        .map(row => ({
-
-          name:
-            row[nameIndex] || "",
-
-          product:
-            row[productIndex] || "",
-
-          rating:
-            row[ratingIndex] || "0",
-
-          text:
-            row[reviewIndex] || "",
-
-          show:
-            row[showIndex] || ""
-
-        }))
-        .filter(review =>
-          review.show.trim().toLowerCase() === "yes"
-        )
-        .filter(review =>
-          review.name &&
-          review.text
-        )
-        .slice(-5)
-        .reverse();
-
-
-      renderReviews();
-
-    })
-    .catch(error => {
-
-      console.error(
-        "Review loading error:",
-        error
-      );
-
-      /*
-        If Google Sheet cannot be reached,
-        keep the existing review area usable.
-      */
-
-      renderReviews();
-
-    });
-
-});
