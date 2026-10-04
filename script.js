@@ -192,8 +192,8 @@ const productCatalog = {
 ========================= */
 
 const comboPrices = {
-	"Combo 1": 339,
-	"Combo 2": 499,
+	"Combo 1": 335,
+	"Combo 2": 485,
 	"Combo 3": 599
 };
 
@@ -2645,7 +2645,7 @@ function placeOrder() {
 	========================= */
 
 	window.open(
-		"whatsapp://send?phone=918220025541&text=" +
+		"whatsapp://send?phone=918072381426&text=" +
 		encodeURIComponent(text)
 	);
 
@@ -4031,7 +4031,7 @@ function sendQuery() {
 
 
 	window.open(
-		"https://wa.me/918220025541?text=" +
+		"https://wa.me/918072381426?text=" +
 		encodeURIComponent(
 			`New Bizmo Customer Query\n\nName: ${name}\nMobile: ${mobile}\n\nQuery / Feedback:\n${message}`
 		),
