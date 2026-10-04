@@ -2113,9 +2113,16 @@ footer {
 }
 
 
-.footer-grid a:hover {
+@media (hover: hover) {
+  .footer-grid a:hover {
+    color: var(--gold);
+  }
+}
+
+.footer-grid a:active {
   color: var(--gold);
 }
+
 
 .socials {
   display: flex;
@@ -2138,11 +2145,16 @@ footer {
   transition: 0.22s;
 }
 
-.socials a:hover {
-  background: var(--gold);
-  color: var(--violet-deep);
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .socials a:hover {
+    background: var(--gold);
+    color: var(--violet-deep);
+    transform: translateY(-2px);
+  }
 }
+                    
+
+
 
 #contact .footer-grid > div:last-child p {
   margin: 0 0 8px;
