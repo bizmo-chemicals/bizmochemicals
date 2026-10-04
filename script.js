@@ -6441,7 +6441,7 @@ document.addEventListener(
 
 	}
 );
-/* =========================
+/* =========================.
    PINCODE-BASED COD RESTRICTION
    COD is available ONLY for 630702.
    Every other pincode: Online Payment only.
