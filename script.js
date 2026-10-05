@@ -194,7 +194,7 @@ const productCatalog = {
 const comboPrices = {
 	"Combo 1": 335,
 	"Combo 2": 485,
-	"Combo 3": 599
+	"Combo 3": 595
 };
 
 
