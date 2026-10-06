@@ -3789,49 +3789,43 @@ body.page-scroll-locked {
   .section-head .kicker {
     flex-basis: 100%;
   }
+  /* desktop: one uniform size for all golden kicker labels + all section headings */
+.kicker {
+  font-size: 12px !important;
+}
+.section-head h2,
+.split-copy h2,
+.about h2,
+.newsletter h2,
+.newsletter-heading h2,
+.combo-copy h2 {
+  font-size: 38px !important;
+}
 
-  /* combos: "swipe for more" makes no sense with a mouse */
-  #combos .section-head .kicker {
-    display: none;
-  }
 
-  /* bulk: text + 2x2 point cards left, image fills the right column */
-  #bulk .split-grid {
-    grid-template-columns: 1fr;
-  }
-  #bulk .split-copy {
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 26px 48px;
-    align-items: start;
-  }
-  #bulk .split-copy > .kicker {
-    grid-column: 1;
-  }
-  #bulk .split-copy > h2 {
-    grid-column: 1;
-  }
-  #bulk .split-copy > .bulk-info {
-    grid-column: 1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-top: 4px;
-  }
-  #bulk .split-copy > .primary-btn {
-    grid-column: 1;
-    justify-self: start;
-  }
-  #bulk .split-copy > .split-image {
-    grid-column: 2;
-    grid-row: 1 / span 4;
-    align-self: stretch;
-    margin: 0;
-  }
-  #bulk .split-copy > .split-image img {
-    height: 100%;
-    object-fit: cover;
-  }
+/* combos: keep the heading + description vertically centered */
+#combos .section-head {
+  align-items: center;
+}
+#combos .section-head p {
+  display: none;
+}
+
+
+/* bulk desktop: heading top, one tile per row, button below */
+#bulk .split-grid {
+  grid-template-columns: 1fr;
+}
+#bulk .bulk-info {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+
+
+
+
 
   /* why bizmo: intro full-width on top, 3 points as cards in a row */
   #about .about-grid {
@@ -3866,5 +3860,17 @@ body.page-scroll-locked {
   #faq .faq-item {
     margin-bottom: 14px;
   }
+}
+
+/* bulk: kill the 55px grid row-gap, keep the stack tight */
+#bulk .split-grid {
+  gap: 0;
+}
+#bulk .bulk-info {
+  margin-top: 14px !important;
+  margin-bottom: 0 !important;
+}
+#bulk .primary-btn {
+  margin-top: 22px !important;
 }
 
