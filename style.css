@@ -2372,7 +2372,7 @@ footer {
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
-  z-index: 120;
+  z-index: 200;
   max-width: 90%;
   text-align: center;
   border: 1px solid rgba(201, 162, 75, 0.5);
@@ -2673,6 +2673,67 @@ footer {
   text-align: center;
   font-size: 11px;
   font-weight: 600;
+}
+
+/* Bizmo loading spinner for order buttons */
+.bizmo-btn-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: -3px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: bizmo-spin 0.7s linear infinite;
+}
+
+@keyframes bizmo-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Checkout warnings — toast-style pill matching site palette */
+#checkoutMessage {
+  display: none;
+  margin: 10px auto 0;
+  max-width: 92%;
+  background: linear-gradient(135deg, var(--violet), var(--violet-deep));
+  color: #f7f0dc;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  border: 1px solid rgba(201, 162, 75, 0.5);
+  box-shadow: 0 8px 22px rgba(43, 26, 86, 0.3);
+}
+
+#checkoutMessage.show {
+  display: block;
+}
+
+/* COD availability note — slim single-line pill */
+#orderModeMessage {
+  margin: 8px auto 0;
+  max-width: 94%;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.4;
+}
+
+#orderModeMessage.mode-ok {
+  background: rgba(201, 162, 75, 0.12);
+  border: 1px solid rgba(201, 162, 75, 0.4);
+  color: #8a6d2b;
+}
+
+#orderModeMessage.mode-na {
+  background: transparent;
+  border: 1px solid rgba(71, 42, 140, 0.22);
+  color: #7a6a9a;
 }
 
 .checkout-header {
@@ -3874,3 +3935,51 @@ body.page-scroll-locked {
   margin-top: 22px !important;
 }
 
+
+/* ===== Order method (COD / WhatsApp) — v11 ===== */
+#orderModeMessage {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.place-order-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---------- COD product confirmation popup ---------- */
+.bizmo-cod-confirm-items {
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 6px 0 4px;
+  text-align: left;
+}
+.bizmo-cod-confirm-items .checkout-item {
+  padding: 10px 2px;
+}
+.bizmo-cod-confirm-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 2px 4px;
+  border-top: 1px solid var(--lavender-line);
+  margin-top: 8px;
+  font-size: 15px;
+}
+.bizmo-cod-confirm-total strong {
+  font-size: 20px;
+  color: var(--violet);
+}
+.bizmo-cod-confirm-addr {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 10px 0 2px;
+  line-height: 1.5;
+}
+.bizmo-cod-confirm-note {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1c7a3d;
+  margin: 8px 0 4px;
+}
