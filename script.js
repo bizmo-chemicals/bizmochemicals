@@ -10,7 +10,7 @@ let modalQty = 1;
 ========================= */
 
 const BIZMO_ORDER_API_URL =
-	"https://script.google.com/macros/s/AKfycbyY42y_33PuXb0I4JdDUYkD12he6dVKMeBEZKGOstwWBigPtMU44PbUVnccxnC4OA/exec";
+	"https://script.google.com/macros/s/AKfycby_AQMbH9dFbgNmpDoFK4X4azUi_1Z7ZnY80UBpg0zM5HI8oqXaag_176UGJWpP5jw/exec";
 
 let bizmoPendingOrder = null;
 let bizmoOrderSaving = false;
@@ -192,9 +192,9 @@ const productCatalog = {
 ========================= */
 
 const comboPrices = {
-	"Combo 1": 335,
-	"Combo 2": 485,
-	"Combo 3": 595
+	"Combo 1": 339,
+	"Combo 2": 499,
+	"Combo 3": 599
 };
 
 
@@ -1910,18 +1910,37 @@ function checkout() {
 	}
 
 
-	document
-		.getElementById(
+	const checkoutModalEl =
+		document.getElementById(
 			"checkoutModal"
-		)
-		?.classList.add(
+		);
+
+
+	if (checkoutModalEl) {
+
+		checkoutModalEl.classList.add(
 			"show"
 		);
+
+		/* Always open at the top — a previous
+		   order leaves the scroll at the bottom. */
+		checkoutModalEl.scrollTop = 0;
+
+		const checkoutBoxEl =
+			checkoutModalEl.querySelector(
+				".checkout-box"
+			);
+
+		if (checkoutBoxEl) {
+
+			checkoutBoxEl.scrollTop = 0;
+		}
+	}
 
 
 	updatePageScrollLock();
 
-	updateCodAvailability();
+	updateOrderMode();
 }
 
 
@@ -1935,6 +1954,16 @@ function closeCheckout() {
 			"show"
 		);
 
+
+	/* Reset the form every time checkout closes,
+	   so a fresh checkout never shows stale details. */
+	clearCheckoutDetails();
+
+	clearCheckoutStatus();
+
+	bizmoClearThrottleCountdown();
+
+	updateOrderMode();
 
 	updatePageScrollLock();
 }
@@ -2092,170 +2121,6 @@ function generateBizmoOrderId() {
    SAVE ORDER TO GOOGLE SHEET
 ========================= */
 
-function saveBizmoOrder(
-	order
-) {
-
-	if (
-		!order ||
-		!order.orderId
-	) {
-		return false;
-	}
-
-
-	const payload = {
-
-		action:
-			"saveOrder",
-
-		orderId:
-			order.orderId,
-
-		name:
-			order.name,
-
-		mobile:
-			order.mobile,
-
-		address:
-			order.address,
-
-		city:
-			order.city,
-
-		pincode:
-			order.pincode,
-
-		items:
-			order.items,
-
-		total:
-			order.total,
-
-		payment:
-			order.payment
-	};
-
-
-	const body =
-		JSON.stringify(
-			payload
-		);
-
-
-	/*
-	 * sendBeacon is used because the
-	 * Apps Script response does not need
-	 * to be read by the browser.
-	 *
-	 * The request is queued in the
-	 * background and does not block the
-	 * confirmation popup.
-	 */
-
-	try {
-
-		if (
-			typeof navigator.sendBeacon ===
-			"function"
-		) {
-
-			const blob =
-				new Blob(
-					[
-						body
-					],
-					{
-						type:
-							"text/plain;charset=UTF-8"
-					}
-				);
-
-
-			const queued =
-				navigator.sendBeacon(
-					BIZMO_ORDER_API_URL,
-					blob
-				);
-
-
-			if (queued) {
-
-				return true;
-			}
-		}
-
-	} catch (error) {
-
-		console.error(
-			"Order beacon error:",
-			error
-		);
-	}
-
-
-	/*
-	 * Fallback for browsers where
-	 * sendBeacon is unavailable or
-	 * unable to queue the request.
-	 *
-	 * no-cors is intentional because
-	 * we do not need to read the response.
-	 */
-
-	try {
-
-		fetch(
-			BIZMO_ORDER_API_URL,
-			{
-				method:
-					"POST",
-
-				mode:
-					"no-cors",
-
-				credentials:
-					"omit",
-
-				headers: {
-					"Content-Type":
-						"text/plain;charset=utf-8"
-				},
-
-				body:
-					body,
-
-				keepalive:
-					true
-			}
-		)
-			.catch(
-				error => {
-
-					console.error(
-						"Background order save error:",
-						error
-					);
-
-				}
-			);
-
-
-		return true;
-
-	} catch (error) {
-
-		console.error(
-			"Order background save error:",
-			error
-		);
-
-		return false;
-	}
-}
-
-
 /* =========================
    BUILD ORDER ITEMS
 ========================= */
@@ -2305,6 +2170,11 @@ function buildBizmoOrderItems() {
 /* =========================
    PLACE ORDER
 ========================= */
+
+let bizmoLastOrderAttempt = 0;
+
+let bizmoCodSubmitting = false;
+
 
 function placeOrder() {
 
@@ -2361,11 +2231,9 @@ function placeOrder() {
 		!pin
 	) {
 
-		message.textContent =
-			"Please fill all delivery details.";
-
-		message.style.color =
-			"#e31f4f";
+		showToast(
+			"Please fill all delivery details."
+		);
 
 		return;
 	}
@@ -2377,11 +2245,9 @@ function placeOrder() {
 		)
 	) {
 
-		message.textContent =
-			"Please enter a valid 10-digit mobile number.";
-
-		message.style.color =
-			"#e31f4f";
+		showToast(
+			"Please enter a valid 10-digit mobile number."
+		);
 
 		return;
 	}
@@ -2393,11 +2259,9 @@ function placeOrder() {
 		)
 	) {
 
-		message.textContent =
-			"Please enter a valid 6-digit pincode.";
-
-		message.style.color =
-			"#e31f4f";
+		showToast(
+			"Please enter a valid 6-digit pincode."
+		);
 
 		return;
 	}
@@ -2405,66 +2269,109 @@ function placeOrder() {
 
 	if (!cart.length) {
 
-		message.textContent =
-			"Your cart is empty.";
-
-		message.style.color =
-			"#e31f4f";
+		showToast(
+			"Your cart is empty."
+		);
 
 		return;
 	}
 
 
 	/* =========================
-	   PAYMENT
+	   ORDER MODE
+	   630702        -> COD, placed on the website
+	   other 6-digit -> WhatsApp order
 	========================= */
 
-	const payment =
+	const methodRadio =
 		document.querySelector(
-			'input[name="paymentMethod"]:checked'
-		)?.value ||
-		"Cash on Delivery";
+			'input[name="orderMethod"]:checked'
+		);
+
+	const orderMethod =
+		methodRadio ?
+			methodRadio.value :
+			"cod";
+
+	const isCodPin =
+		pin ===
+			BIZMO_COD_PINCODE;
 
 
-	/* =========================
-	   COD PINCODE GUARD
-	   Blocks bypass attempts even if the
-	   disabled COD radio is re-enabled
-	   through browser devtools.
-	========================= */
-
+	/* Mirror the server rule on the client:
+	   COD can only be chosen for the COD pincode. */
 	if (
-		payment ===
-			"Cash on Delivery" &&
-		pin !==
-			BIZMO_COD_PINCODE
+		orderMethod === "cod" &&
+		!isCodPin
 	) {
 
 		message.textContent =
-			"Cash on Delivery is not available for your pincode. Please choose Online Payment.";
+			"Cash on Delivery is available only for pincode 630702. Please order through WhatsApp.";
 
-		message.style.color =
-			"#e31f4f";
-
-
-		const onlineInput =
-			document.getElementById(
-				"onlinePayment"
-			);
-
-
-		if (onlineInput) {
-
-			onlineInput.checked =
-				true;
-		}
-
-
-		updateCodAvailability();
-
+		updateOrderMode();
 
 		return;
 	}
+
+
+	/* =========================
+	   ABUSE DEFENSE 1: HONEYPOT
+	   Invisible field — humans never fill it.
+	   Bots do. Fake success so they learn nothing.
+	========================= */
+
+	const honeypotField =
+		document.getElementById(
+			"checkoutCompany"
+		);
+
+
+	if (
+		honeypotField &&
+		honeypotField.value.trim() !==
+			""
+	) {
+
+		showBizmoOrderSuccess(
+			generateBizmoOrderId()
+		);
+
+		return;
+	}
+
+
+	/* =========================
+	   ABUSE DEFENSE 2: THROTTLE
+	   One order attempt per 59 seconds, with a
+	   visible countdown so the user knows
+	   how long to wait.
+	========================= */
+
+	const attemptNow =
+		Date.now();
+
+
+	if (
+		attemptNow -
+			bizmoLastOrderAttempt <
+		BIZMO_ORDER_THROTTLE_MS
+	) {
+
+		showToast(
+			"Please wait before placing another order."
+		);
+
+		bizmoShowThrottleCountdown(
+			message
+		);
+
+		return;
+	}
+
+
+	/* NOTE: bizmoLastOrderAttempt is now set only after a
+	   SUCCESSFUL order (in placeCodOrder's finish handler),
+	   so going back to edit no longer triggers the cooldown. */
 
 
 	/* =========================
@@ -2494,22 +2401,11 @@ function placeOrder() {
 	clearCheckoutStatus();
 
 
-	const orderId =
-		generateBizmoOrderId();
-
-
 	/* =========================
-	   SAVE PENDING ORDER LOCALLY
+	   ROUTE BY PINCODE
 	========================= */
 
-	const orderItems =
-		buildBizmoOrderItems();
-
-
-	bizmoPendingOrder = {
-
-		orderId:
-			orderId,
+	const bizmoOrderData = {
 
 		name:
 			name,
@@ -2523,108 +2419,564 @@ function placeOrder() {
 		city:
 			city,
 
-		pincode:
+		pin:
 			pin,
+
+		total:
+			total,
+
+		message:
+			message
+	};
+
+
+	if (orderMethod === "cod") {
+
+		/* Show the product confirmation first —
+		   the order is sent only after they tap
+		   "Confirm Order". */
+		bizmoPendingCodData =
+			bizmoOrderData;
+
+		showBizmoCodConfirm(
+			bizmoOrderData
+		);
+
+		return;
+	}
+
+
+	orderViaWhatsApp(
+		bizmoOrderData
+	);
+}
+
+
+/* =========================
+   CLIENT IP (best effort)
+   Used only for the loose per-IP backstop.
+   The per-phone limit is the real defense.
+========================= */
+
+function getBizmoClientIp() {
+
+	return fetch(
+		"https://api.ipify.org?format=json"
+	)
+		.then(
+			response =>
+				response.json()
+		)
+		.then(
+			data =>
+				data.ip ||
+					""
+		)
+		.catch(
+			() =>
+				""
+		);
+}
+
+
+/* =========================
+   JSONP HELPER
+   Apps Script cannot send CORS headers,
+   so a normal fetch cannot READ its reply.
+   JSONP (script tag) works cross-origin.
+========================= */
+
+function bizmoJsonp(
+	url,
+	params,
+	onResult,
+	timeoutMs
+) {
+
+	const cbName =
+		"bizmoCb" +
+		Date.now() +
+		Math.floor(
+			Math.random() *
+				1000000
+		);
+
+	const script =
+		document.createElement(
+			"script"
+		);
+
+	let done =
+		false;
+
+
+	const cleanup =
+		() => {
+
+			clearTimeout(
+				timer
+			);
+
+			try {
+
+				delete window[
+					cbName
+				];
+
+			} catch (error) {
+
+				window[
+					cbName
+				] =
+					undefined;
+			}
+
+
+			if (
+				script.parentNode
+			) {
+
+				script.parentNode.removeChild(
+					script
+				);
+			}
+		};
+
+
+	const timer =
+		setTimeout(
+			() => {
+
+				if (done) {
+					return;
+				}
+
+				done =
+					true;
+
+				cleanup();
+
+				onResult(
+					{
+						ok: false,
+						reason: "timeout"
+					}
+				);
+			},
+			timeoutMs ||
+				25000
+		);
+
+
+	window[
+		cbName
+	] =
+		data => {
+
+			if (done) {
+				return;
+			}
+
+			done =
+				true;
+
+			cleanup();
+
+			onResult(
+				data || {
+					ok: false,
+					reason: "bad_response"
+				}
+			);
+		};
+
+
+	script.onerror =
+		() => {
+
+			if (done) {
+				return;
+			}
+
+			done =
+				true;
+
+			cleanup();
+
+			onResult(
+				{
+					ok: false,
+					reason: "network"
+				}
+			);
+		};
+
+
+	const query =
+		Object.keys(
+			params
+		)
+			.map(
+				key =>
+					encodeURIComponent(
+						key
+					) +
+					"=" +
+					encodeURIComponent(
+						params[
+							key
+						]
+					)
+			)
+			.join(
+				"&"
+			);
+
+
+	script.src =
+		url +
+		(
+			url.indexOf(
+				"?"
+			) >
+			-1
+				? "&"
+				: "?"
+		) +
+		query +
+		"&callback=" +
+		cbName;
+
+
+	document.head.appendChild(
+		script
+	);
+}
+
+
+/* =========================
+   COD ORDER (630702)
+   Placed directly on the website.
+   Apps Script logs it, enforces limits
+   and emails the owner.
+========================= */
+
+function placeCodOrder(
+	orderData
+) {
+
+	const button =
+		document.getElementById(
+			"placeOrderBtn"
+		);
+
+	const message =
+		orderData.message;
+
+
+	if (
+		bizmoCodSubmitting
+	) {
+
+		return;
+	}
+
+
+	bizmoCodSubmitting =
+		true;
+
+
+	if (button) {
+
+		button.disabled =
+			true;
+
+		button.innerHTML =
+			'<span class="bizmo-btn-spinner"></span>Placing your order\u2026';
+	}
+
+
+	/* NOTE: the order ID is generated on the server
+	   (sequential, via the Bizmo Apps Script) and
+	   returned in the response. */
+	const orderItems =
+		buildBizmoOrderItems();
+
+
+	const finish =
+		result => {
+
+			bizmoCodSubmitting =
+				false;
+
+
+			if (button) {
+
+				button.disabled =
+					false;
+
+				updateOrderMode();
+			}
+
+
+			if (
+				result &&
+				result.ok
+			) {
+
+				/* success: start the 59s cooldown NOW
+				   (only after a real placed order) */
+				bizmoLastOrderAttempt =
+					Date.now();
+
+				/* success: clear and celebrate */
+
+				cart =
+					[];
+
+				updateCartCount();
+
+				renderCart();
+
+				updateProductButtons();
+
+				updateComboButton();
+
+				clearCheckoutDetails();
+
+				closeCheckout();
+
+				clearCheckoutStatus();
+
+				showBizmoOrderSuccess(
+					(
+						result &&
+						result.orderId
+					) ||
+						"\u2014"
+				);
+
+				return;
+			}
+
+
+			const reason =
+				(
+					result &&
+					result.reason
+				) ||
+				"error";
+
+
+			if (
+				reason ===
+				"limit_phone"
+			) {
+
+				message.textContent =
+					"You have placed the maximum COD orders for today (3). For more orders, please contact us on WhatsApp.";
+
+			} else if (
+				reason ===
+				"limit_ip"
+			) {
+
+				message.textContent =
+					"Too many orders from this device today. Please contact us on WhatsApp for help.";
+
+			} else if (
+				reason ===
+				"duplicate"
+			) {
+
+				message.textContent =
+					"This looks like a duplicate of an order you just placed.";
+
+			} else if (
+				reason ===
+					"timeout" ||
+				reason ===
+					"network"
+			) {
+
+				message.textContent =
+					"We could not confirm your order right now. Please do not tap again \u2014 message us on WhatsApp to check whether it was placed.";
+
+			} else {
+
+				message.textContent =
+					"Something went wrong while placing your order. Please try again.";
+			}
+
+
+			message.style.color =
+				"#e31f4f";
+
+			message.classList.add("show");
+		};
+
+
+	const payload = {
+
+		name:
+			orderData.name,
+
+		mobile:
+			orderData.mobile,
+
+		address:
+			orderData.address,
+
+		city:
+			orderData.city,
+
+		pincode:
+			orderData.pin,
 
 		items:
 			orderItems,
 
 		total:
-			total,
+			orderData.total,
 
 		payment:
-			payment
+			"Cash on Delivery"
 	};
 
 
-	/*
-	 * Keep a copy in sessionStorage
-	 * so the order data survives the
-	 * WhatsApp app switch.
-	 */
+	bizmoJsonp(
+		BIZMO_ORDER_API_URL,
+		{
+			action:
+				"placeCodOrder",
 
-	sessionStorage.setItem(
-		"bizmoPendingOrder",
-		JSON.stringify(
-			bizmoPendingOrder
-		)
+			payload:
+				JSON.stringify(
+					payload
+				)
+		},
+		finish,
+		60000
 	);
+}
 
 
-	/* =========================
-	   CREATE WHATSAPP MESSAGE
-	========================= */
+/* =========================
+   WHATSAPP ORDER (other pincodes)
+   Enquiry message — NO order ID, because
+   Bizmo cannot know if it was really sent.
+========================= */
+
+function orderViaWhatsApp(
+	orderData
+) {
 
 	let text =
-		"New Bizmo Order\n\n" +
-
-		"Order ID: " +
-		orderId +
-
-		"\n\nCustomer Details\n" +
-
+		"New Bizmo Order Request\n\n" +
+		"Customer Details\n" +
 		"Name: " +
-		name +
-
+		orderData.name +
 		"\nMobile: " +
-		mobile +
-
+		orderData.mobile +
 		"\n\nDelivery Address\n" +
-
-		address +
-
+		orderData.address +
 		"\n" +
-
-		city +
-
+		orderData.city +
 		" - " +
-
-		pin +
-
+		orderData.pin +
 		"\n\nOrder Details\n";
 
 
 	cart.forEach(
-		(item, index) => {
+		(
+			item,
+			index
+		) => {
 
 			text +=
-				`${index + 1}. ${item.name}\n`;
+				index +
+				1 +
+				". " +
+				item.name +
+				"\n";
 
 
-			if (item.flavour) {
+			if (
+				item.flavour
+			) {
 
 				text +=
-					`   Flavour: ${item.flavour}\n`;
+					"   Flavour: " +
+					item.flavour +
+					"\n";
 			}
 
 
-			if (item.size) {
+			if (
+				item.size
+			) {
 
 				text +=
-					`   Size: ${item.size}\n`;
+					"   Size: " +
+					item.size +
+					"\n";
 			}
 
 
 			text +=
-				`   Qty: ${item.qty}\n` +
-
-				`   Price: ₹${
-					item.price *
-					item.qty
-				}\n\n`;
+				"   Qty: " +
+				item.qty +
+				"\n" +
+				"   Price: \u20B9" +
+				item.price *
+					item.qty +
+				"\n\n";
 		}
 	);
 
 
 	text +=
-		`Total: ₹${total}\nPayment: ${payment}`;
+		"Total: \u20B9" +
+		orderData.total +
+		"\n\n" +
+		"Please confirm the final price for my location, delivery availability and payment options. Thank you!";
 
 
-	/* =========================
-	   MARK WHATSAPP ORDER PENDING
-	========================= */
+	/*
+	 * Keep a copy so the return screen and
+	 * the optional lead log have the details.
+	 */
 
-	sessionStorage.setItem(
+	localStorage.setItem(
+		"bizmoPendingOrder",
+		JSON.stringify(
+			{
+				name:
+					orderData.name,
+
+				mobile:
+					orderData.mobile,
+
+				address:
+					orderData.address,
+
+				city:
+					orderData.city,
+
+				pincode:
+					orderData.pin,
+
+				items:
+					buildBizmoOrderItems(),
+
+				total:
+					orderData.total
+			}
+		)
+	);
+
+
+	localStorage.setItem(
 		"bizmoWhatsAppPending",
 		"true"
 	);
@@ -2640,23 +2992,239 @@ function placeOrder() {
 		Date.now();
 
 
-	/* =========================
-	   OPEN WHATSAPP IMMEDIATELY
-	========================= */
+	/* retail orders -> 8072381426 (bulk stays 8220025541) */
 
 	window.open(
 		"whatsapp://send?phone=918072381426&text=" +
-		encodeURIComponent(text)
+			encodeURIComponent(
+				text
+			)
+	);
+}
+
+
+/* =========================
+   WHATSAPP RETURN: YES / NO
+========================= */
+
+function handleWhatsappYes() {
+
+	closeBizmoOrderConfirm();
+
+
+	localStorage.removeItem(
+		"bizmoWhatsAppPending"
 	);
 
 
+	bizmoWhatsAppLeftPage =
+		false;
+
+	bizmoOrderConfirmShown =
+		false;
+
+	bizmoWhatsAppOpenedAt =
+		0;
+
+
 	/*
-	 * Cart remains unchanged.
-	 * Customer details remain unchanged.
-	 *
-	 * Confirmation is shown only after
-	 * the user leaves Bizmo and returns.
+	 * Log as a lead (fire-and-forget JSONP).
+	 * Status stays WHATSAPP_REQUEST until
+	 * the team sees the real message.
 	 */
+
+	try {
+
+		const raw =
+			localStorage.getItem(
+				"bizmoPendingOrder"
+			);
+
+
+		if (raw) {
+
+			bizmoJsonp(
+				BIZMO_ORDER_API_URL,
+				{
+					action:
+						"logWhatsappLead",
+
+					payload:
+						raw
+				},
+				() => {},
+				30000
+			);
+		}
+
+	} catch (error) {}
+
+
+	localStorage.removeItem(
+		"bizmoPendingOrder"
+	);
+
+
+	/* clear cart + details */
+
+	cart =
+		[];
+
+	updateCartCount();
+
+	renderCart();
+
+	updateProductButtons();
+
+	updateComboButton();
+
+	clearCheckoutDetails();
+
+	closeCheckout();
+
+	clearCheckoutStatus();
+
+
+	showBizmoWhatsappThanks();
+}
+
+
+function handleWhatsappNo() {
+
+	closeBizmoOrderConfirm();
+
+
+	localStorage.removeItem(
+		"bizmoWhatsAppPending"
+	);
+
+	localStorage.removeItem(
+		"bizmoPendingOrder"
+	);
+
+
+	bizmoWhatsAppLeftPage =
+		false;
+
+	bizmoOrderConfirmShown =
+		false;
+
+	bizmoWhatsAppOpenedAt =
+		0;
+
+
+	clearCheckoutStatus();
+
+	updatePageScrollLock();
+
+	/*
+	 * Cart and customer details stay intact —
+	 * the customer returns to edit them.
+	 */
+}
+
+
+/* =========================
+   WHATSAPP THANK-YOU POPUP
+========================= */
+
+function ensureBizmoWhatsappThanks() {
+
+	if (
+		document.getElementById(
+			"bizmoWhatsappThanks"
+		)
+	) {
+
+		return;
+	}
+
+
+	ensureBizmoSuccessPopup();
+
+
+	const wrapper =
+		document.createElement(
+			"div"
+		);
+
+
+	wrapper.innerHTML =
+		'<div class="bizmo-order-success" id="bizmoWhatsappThanks" aria-hidden="true">' +
+		'<div class="bizmo-order-success-box" role="dialog" aria-modal="true">' +
+		'<button type="button" class="bizmo-success-close-x" id="bizmoThanksCloseX" aria-label="Close">\u00D7</button>' +
+		'<div class="bizmo-success-icon">\u2713</div>' +
+		"<h2>Thank You!</h2>" +
+		"<p>Your order request has been noted.<br>The Bizmo team will contact you on WhatsApp shortly to confirm the final price and delivery.</p>" +
+		'<button type="button" class="bizmo-order-btn primary" id="bizmoThanksCloseBtn">Continue Shopping</button>' +
+		"</div></div>";
+
+
+	while (
+		wrapper.firstElementChild
+	) {
+
+		document.body.appendChild(
+			wrapper.firstElementChild
+		);
+	}
+}
+
+
+function showBizmoWhatsappThanks() {
+
+	ensureBizmoWhatsappThanks();
+
+
+	const popup =
+		document.getElementById(
+			"bizmoWhatsappThanks"
+		);
+
+
+	if (!popup) {
+		return;
+	}
+
+
+	popup.classList.add(
+		"show"
+	);
+
+	popup.setAttribute(
+		"aria-hidden",
+		"false"
+	);
+
+
+	updatePageScrollLock();
+}
+
+
+function closeBizmoWhatsappThanks() {
+
+	const popup =
+		document.getElementById(
+			"bizmoWhatsappThanks"
+		);
+
+
+	if (!popup) {
+		return;
+	}
+
+
+	popup.classList.remove(
+		"show"
+	);
+
+	popup.setAttribute(
+		"aria-hidden",
+		"true"
+	);
+
+
+	updatePageScrollLock();
 }
 
 
@@ -2714,10 +3282,7 @@ function ensureBizmoOrderConfirmPopups() {
 				</h2>
 
 				<p>
-					Did you send the order message on WhatsApp?
-					<br><br>
-					If you already tapped Send, choose
-					<strong>“Order Sent.”</strong>
+					Did you send your order message on WhatsApp?
 				</p>
 
 				<div class="bizmo-order-confirm-actions">
@@ -2727,7 +3292,7 @@ function ensureBizmoOrderConfirmPopups() {
 						id="orderSentBtn"
 						class="bizmo-order-btn primary"
 					>
-						✓ Order Sent
+						\u2713 Yes, Sent
 					</button>
 
 					<button
@@ -2735,55 +3300,7 @@ function ensureBizmoOrderConfirmPopups() {
 						id="editOrderBtn"
 						class="bizmo-order-btn secondary"
 					>
-						✎ I Want to Edit
-					</button>
-
-				</div>
-
-			</div>
-
-		</div>
-
-
-		<div
-			class="bizmo-order-confirm"
-			id="bizmoEditConfirm"
-			aria-hidden="true"
-		>
-
-			<div
-				class="bizmo-order-confirm-box"
-				role="dialog"
-				aria-modal="true"
-				aria-labelledby="bizmoEditConfirmTitle"
-			>
-
-				<h2 id="bizmoEditConfirmTitle">
-					Edit Order?
-				</h2>
-
-				<p>
-					If you already sent the WhatsApp message,
-					editing and sending again may create a
-					duplicate order.
-				</p>
-
-				<div class="bizmo-order-confirm-actions">
-
-					<button
-						type="button"
-						id="keepOrderSentBtn"
-						class="bizmo-order-btn primary"
-					>
-						✓ Keep Order Sent
-					</button>
-
-					<button
-						type="button"
-						id="continueEditingBtn"
-						class="bizmo-order-btn secondary"
-					>
-						✎ Continue Editing
+						\u2710 No, Edit Details
 					</button>
 
 				</div>
@@ -2899,8 +3416,8 @@ function ensureBizmoSuccessPopup() {
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			background: #fbf4e3;
-			color: #a5813d;
+			background: #efe9f9;
+			color: #472a8c;
 			font-size: 34px;
 			font-weight: 700;
 		}
@@ -2931,7 +3448,7 @@ function ensureBizmoSuccessPopup() {
 			margin: 8px 0 18px;
 			padding: 14px 12px;
 			border-radius: 12px;
-			background: #faf7f0;
+			background: #f7f4fd;
 			color: #111;
 			font-size: 24px;
 			font-weight: 800;
@@ -2954,7 +3471,7 @@ function ensureBizmoSuccessPopup() {
 			font-size: 16px;
 			font-weight: 700;
 			cursor: pointer;
-			background: #0c3b2e;
+			background: linear-gradient(135deg, #472a8c, #2b1a56);
 			color: #fff;
 		}
 
@@ -3029,7 +3546,8 @@ function ensureBizmoSuccessPopup() {
 
 				<p class="bizmo-success-message">
 					Thank you for your order!<br>
-					Your order has been confirmed successfully.
+					Your Cash on Delivery order is confirmed.<br>
+					Please keep cash ready &mdash; pay when your order arrives.
 				</p>
 
 				<div class="bizmo-success-order-label">
@@ -3212,58 +3730,237 @@ function closeBizmoOrderConfirm() {
 }
 
 
-function showBizmoEditConfirm() {
+/* =========================
+   COD PRODUCT CONFIRMATION
+   "Confirm Your Order" step shown after tapping
+   Place Order with COD — the order is sent only
+   after the customer taps Confirm Order.
+========================= */
 
-	ensureBizmoOrderConfirmPopups();
+function ensureBizmoCodConfirmPopup() {
 
+	if (
+		document.getElementById(
+			"bizmoCodConfirm"
+		)
+	) {
+		return;
+	}
+
+
+	const wrapper =
+		document.createElement(
+			"div"
+		);
+
+	wrapper.innerHTML = `
+
+		<div
+			class="bizmo-order-confirm"
+			id="bizmoCodConfirm"
+			aria-hidden="true"
+		>
+
+			<div
+				class="bizmo-order-confirm-box"
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="bizmoCodConfirmTitle"
+			>
+
+				<h2 id="bizmoCodConfirmTitle">
+					Confirm Your Order
+				</h2>
+
+				<div
+					class="bizmo-cod-confirm-items"
+					id="bizmoCodConfirmItems"
+				></div>
+
+				<div class="bizmo-cod-confirm-total">
+					<span>Total</span>
+					<strong id="bizmoCodConfirmTotal">
+						\u20B90
+					</strong>
+				</div>
+
+				<p
+					class="bizmo-cod-confirm-addr"
+					id="bizmoCodConfirmAddr"
+				></p>
+
+				<p class="bizmo-cod-confirm-note">
+					Pay in cash when your order arrives.
+				</p>
+
+				<div class="bizmo-order-confirm-actions">
+
+					<button
+						type="button"
+						id="codConfirmBtn"
+						class="bizmo-order-btn primary"
+					>
+						\u2713 Confirm Order
+					</button>
+
+					<button
+						type="button"
+						id="codEditBtn"
+						class="bizmo-order-btn secondary"
+					>
+						\u2710 Edit Details
+					</button>
+
+				</div>
+
+			</div>
+
+		</div>
+
+	`;
+
+
+	while (
+		wrapper.firstElementChild
+	) {
+
+		document.body.appendChild(
+			wrapper.firstElementChild
+		);
+	}
+
+
+	document
+		.getElementById(
+			"codConfirmBtn"
+		)
+		.addEventListener(
+			"click",
+			bizmoConfirmCodOrder
+		);
+
+	document
+		.getElementById(
+			"codEditBtn"
+		)
+		.addEventListener(
+			"click",
+			hideBizmoCodConfirm
+		);
+}
+
+
+function showBizmoCodConfirm(
+	orderData
+) {
+
+	ensureBizmoCodConfirmPopup();
 
 	const popup =
 		document.getElementById(
-			"bizmoEditConfirm"
+			"bizmoCodConfirm"
 		);
-
 
 	if (!popup) return;
 
+	const itemsBox =
+		document.getElementById(
+			"bizmoCodConfirmItems"
+		);
+
+	const totalEl =
+		document.getElementById(
+			"bizmoCodConfirmTotal"
+		);
+
+	const addrEl =
+		document.getElementById(
+			"bizmoCodConfirmAddr"
+		);
+
+	const srcItems =
+		document.getElementById(
+			"checkoutItems"
+		);
+
+	if (itemsBox) {
+
+		itemsBox.innerHTML =
+			srcItems ?
+				srcItems.innerHTML :
+				"";
+	}
+
+	if (totalEl) {
+
+		totalEl.textContent =
+			"\u20B9" +
+				orderData.total;
+	}
+
+	if (addrEl) {
+
+		addrEl.textContent =
+			orderData.name +
+				", " +
+				orderData.address +
+				", " +
+				orderData.city +
+				" - " +
+				orderData.pin;
+	}
 
 	popup.classList.add(
 		"show"
 	);
-
 
 	popup.setAttribute(
 		"aria-hidden",
 		"false"
 	);
 
-
 	updatePageScrollLock();
 }
 
 
-function closeBizmoEditConfirm() {
+function hideBizmoCodConfirm() {
 
 	const popup =
 		document.getElementById(
-			"bizmoEditConfirm"
+			"bizmoCodConfirm"
 		);
 
-
 	if (!popup) return;
-
 
 	popup.classList.remove(
 		"show"
 	);
-
 
 	popup.setAttribute(
 		"aria-hidden",
 		"true"
 	);
 
-
 	updatePageScrollLock();
+}
+
+
+function bizmoConfirmCodOrder() {
+
+	hideBizmoCodConfirm();
+
+	if (bizmoPendingCodData) {
+
+		const data =
+			bizmoPendingCodData;
+
+		bizmoPendingCodData =
+			null;
+
+		placeCodOrder(
+			data
+		);
+	}
 }
 
 
@@ -3282,7 +3979,7 @@ function clearCheckoutStatus() {
 
 	message.textContent = "";
 
-	message.style.color = "";
+	message.classList.remove("show");
 }
 
 
@@ -3327,8 +4024,7 @@ function clearCheckoutDetails() {
 		message.textContent =
 			"";
 
-		message.style.color =
-			"";
+		message.classList.remove("show");
 	}
 }
 
@@ -3340,7 +4036,7 @@ function clearCheckoutDetails() {
 function loadBizmoPendingOrder() {
 
 	const saved =
-		sessionStorage.getItem(
+		localStorage.getItem(
 			"bizmoPendingOrder"
 		);
 
@@ -3374,7 +4070,7 @@ function loadBizmoPendingOrder() {
 			error
 		);
 
-		sessionStorage.removeItem(
+		localStorage.removeItem(
 			"bizmoPendingOrder"
 		);
 	}
@@ -3385,136 +4081,6 @@ function loadBizmoPendingOrder() {
    FINALIZE ORDER
 ========================= */
 
-function finalizeBizmoOrder() {
-
-	if (bizmoOrderSaving) {
-		return;
-	}
-
-
-	loadBizmoPendingOrder();
-
-
-	if (
-		!bizmoPendingOrder ||
-		!bizmoPendingOrder.orderId
-	) {
-
-		showToast(
-			"Order details not found. Please try again."
-		);
-
-		return;
-	}
-
-
-	bizmoOrderSaving =
-		true;
-
-
-	const order =
-		bizmoPendingOrder;
-
-
-	/*
-	 * Save in the background.
-	 *
-	 * sendBeacon/fetch does not wait for
-	 * the Apps Script response, so the
-	 * customer is not stuck on the popup.
-	 */
-
-	const saveQueued =
-		saveBizmoOrder(
-			order
-		);
-
-
-	if (!saveQueued) {
-
-		bizmoOrderSaving =
-			false;
-
-
-		showToast(
-			"Unable to save order. Please try again."
-		);
-
-
-		return;
-	}
-
-
-	/* =========================
-	   FINALIZE LOCAL ORDER STATE
-	========================= */
-
-	sessionStorage.removeItem(
-		"bizmoWhatsAppPending"
-	);
-
-	sessionStorage.removeItem(
-		"bizmoPendingOrder"
-	);
-
-
-	bizmoPendingOrder =
-		null;
-
-
-	bizmoWhatsAppLeftPage =
-		false;
-
-	bizmoOrderConfirmShown =
-		false;
-
-	bizmoWhatsAppOpenedAt =
-		0;
-
-
-	closeBizmoOrderConfirm();
-
-	closeBizmoEditConfirm();
-
-
-	/* CLEAR CART */
-
-	cart = [];
-
-
-	updateCartCount();
-
-	renderCart();
-
-	updateProductButtons();
-
-	updateComboButton();
-
-
-	/* CLEAR CUSTOMER DETAILS */
-
-	clearCheckoutDetails();
-
-
-	/* CLOSE CHECKOUT */
-
-	closeCheckout();
-
-
-	bizmoOrderSaving =
-		false;
-
-
-	/* =========================
-	   FINAL SUCCESS POPUP
-	========================= */
-
-	showBizmoOrderSuccess(
-		order.orderId
-	);
-}
-
-
 /* =========================
    ORDER CONFIRMATION BUTTONS
 ========================= */
@@ -3523,7 +4089,7 @@ document.addEventListener(
 	"click",
 	e => {
 
-		/* ORDER SENT */
+		/* YES, SENT ON WHATSAPP */
 
 		const orderSentButton =
 			e.target.closest(
@@ -3535,13 +4101,13 @@ document.addEventListener(
 
 			e.preventDefault();
 
-			finalizeBizmoOrder();
+			handleWhatsappYes();
 
 			return;
 		}
 
 
-		/* I WANT TO EDIT */
+		/* NO, EDIT DETAILS */
 
 		const editOrderButton =
 			e.target.closest(
@@ -3553,71 +4119,25 @@ document.addEventListener(
 
 			e.preventDefault();
 
-			clearCheckoutStatus();
-
-
-			/*
-			 * Stop Popup 1 from appearing again.
-			 *
-			 * Cart and customer details
-			 * remain untouched.
-			 */
-
-			sessionStorage.removeItem(
-				"bizmoWhatsAppPending"
-			);
-
-
-			bizmoWhatsAppLeftPage =
-				false;
-
-			bizmoWhatsAppOpenedAt =
-				0;
-
-
-			closeBizmoOrderConfirm();
-
-			showBizmoEditConfirm();
+			handleWhatsappNo();
 
 			return;
 		}
 
 
-		/* KEEP ORDER SENT */
+		/* THANK-YOU POPUP CLOSE */
 
-		const keepOrderSentButton =
+		const thanksClose =
 			e.target.closest(
-				"#keepOrderSentBtn"
+				"#bizmoThanksCloseX, #bizmoThanksCloseBtn"
 			);
 
 
-		if (keepOrderSentButton) {
+		if (thanksClose) {
 
 			e.preventDefault();
 
-			finalizeBizmoOrder();
-
-			return;
-		}
-
-
-		/* CONTINUE EDITING */
-
-		const continueEditingButton =
-			e.target.closest(
-				"#continueEditingBtn"
-			);
-
-
-		if (continueEditingButton) {
-
-			e.preventDefault();
-
-			clearCheckoutStatus();
-
-			closeBizmoEditConfirm();
-
-			updatePageScrollLock();
+			closeBizmoWhatsappThanks();
 
 			return;
 		}
@@ -3670,7 +4190,7 @@ document.addEventListener(
 function checkBizmoWhatsAppReturn() {
 
 	const pending =
-		sessionStorage.getItem(
+		localStorage.getItem(
 			"bizmoWhatsAppPending"
 		);
 
@@ -3722,7 +4242,7 @@ function checkBizmoWhatsAppReturn() {
 function markBizmoWhatsAppLeftPage() {
 
 	const pending =
-		sessionStorage.getItem(
+		localStorage.getItem(
 			"bizmoWhatsAppPending"
 		);
 
@@ -4031,7 +4551,7 @@ function sendQuery() {
 
 
 	window.open(
-		"https://wa.me/918072381426?text=" +
+		"https://wa.me/918220025541?text=" +
 		encodeURIComponent(
 			`New Bizmo Customer Query\n\nName: ${name}\nMobile: ${mobile}\n\nQuery / Feedback:\n${message}`
 		),
@@ -6450,6 +6970,97 @@ document.addEventListener(
 const BIZMO_COD_PINCODE = "630702";
 
 
+/* One order attempt per 59 seconds (abuse friction).
+   The remaining wait is shown as a live countdown. */
+const BIZMO_ORDER_THROTTLE_MS = 59000;
+
+let bizmoThrottleTimer = null;
+
+let bizmoPendingCodData = null;
+
+
+function bizmoClearThrottleCountdown() {
+
+	if (bizmoThrottleTimer) {
+
+		clearInterval(
+			bizmoThrottleTimer
+		);
+
+		bizmoThrottleTimer =
+			null;
+	}
+}
+
+
+function bizmoShowThrottleCountdown(
+	messageEl
+) {
+
+	bizmoClearThrottleCountdown();
+
+	if (!messageEl) return;
+
+	const tick =
+		() => {
+
+			const remainMs =
+				BIZMO_ORDER_THROTTLE_MS -
+				(
+					Date.now() -
+						bizmoLastOrderAttempt
+				);
+
+			if (remainMs <= 0) {
+
+				bizmoClearThrottleCountdown();
+
+				messageEl.textContent =
+					"";
+
+				messageEl.classList.remove("show");
+
+				return;
+			}
+
+			const totalSeconds =
+				Math.ceil(
+					remainMs / 1000
+				);
+
+			const mm =
+				Math.floor(
+					totalSeconds / 60
+				);
+
+			const ss =
+				String(
+					totalSeconds % 60
+				).padStart(
+					2,
+					"0"
+				);
+
+			messageEl.textContent =
+				"Please wait " +
+					mm +
+					":" +
+					ss +
+					" before placing another order.";
+
+			messageEl.classList.add("show");
+		};
+
+	tick();
+
+	bizmoThrottleTimer =
+		setInterval(
+			tick,
+			1000
+		);
+}
+
+
 function getCheckoutPincodeValue() {
 
 	const field =
@@ -6472,100 +7083,169 @@ function isCodPincodeAllowed() {
 }
 
 
-function updateCodAvailability() {
+/* =========================
+   ORDER MODE (COD vs WHATSAPP)
+   Replaces the old payment-method radios.
+   - 630702            -> COD, order placed on the website
+   - other 6-digit pin -> WhatsApp order
+   - < 6 digits        -> neutral
+========================= */
 
-	const codInput =
+function updateOrderMode() {
+
+	const message =
 		document.getElementById(
-			"codPayment"
+			"orderModeMessage"
 		);
 
-	const onlineInput =
+	const button =
 		document.getElementById(
-			"onlinePayment"
+			"placeOrderBtn"
 		);
 
-	const codOption =
+	const codOpt =
 		document.getElementById(
 			"codOption"
 		);
 
-	const message =
+	const waOpt =
 		document.getElementById(
-			"codRestrictionMessage"
+			"waOption"
+		);
+
+	const codRadio =
+		document.getElementById(
+			"codRadio"
+		);
+
+	const waRadio =
+		document.getElementById(
+			"waRadio"
 		);
 
 
 	if (
-		!codInput ||
-		!onlineInput
+		!message ||
+		!button ||
+		!codOpt ||
+		!waOpt ||
+		!codRadio ||
+		!waRadio
 	) {
 		return;
 	}
 
 
+	const setOptionState =
+		(
+			opt,
+			radio,
+			disabled
+		) => {
+
+			radio.disabled =
+				disabled;
+
+			opt.classList.toggle(
+				"cod-unavailable",
+				disabled
+			);
+		};
+
+
 	const pin =
 		getCheckoutPincodeValue();
 
-	const hasFullPin =
-		pin.length === 6;
 
-	const allowed =
-		pin ===
-			BIZMO_COD_PINCODE;
+	/* reset */
 
-
-	/*
-	 * Restrict COD only AFTER the customer types
-	 * a COMPLETE 6-digit pincode that is not 630702.
-	 *
-	 * Typing (under 6 digits) or empty field ->
-	 * both options visible and selectable, no message.
-	 */
-
-	const restrict =
-		hasFullPin &&
-		!allowed;
+	message.style.display = "none";
+	message.textContent = "";
+	message.style.color = "";
 
 
-	codInput.disabled =
-		restrict;
+	if (pin.length < 6) {
 
-
-	if (codOption) {
-
-		codOption.classList.toggle(
-			"cod-unavailable",
-			restrict
+		/* Neutral: no pincode yet — both options
+		   available, COD pre-selected, no message. */
+		setOptionState(
+			codOpt,
+			codRadio,
+			false
 		);
+
+		setOptionState(
+			waOpt,
+			waRadio,
+			false
+		);
+
+		codRadio.checked =
+			true;
+
+		button.textContent = "Place Order \u2192";
+		return;
 	}
 
-
-	if (message) {
-
-		message.style.display =
-			restrict
-				? "block"
-				: "none";
-	}
-
-
-	/*
-	 * If the customer had COD selected and then
-	 * types an invalid pincode, automatically
-	 * switch them to Online Payment.
-	 */
 
 	if (
-		restrict &&
-		codInput.checked
+		pin ===
+			BIZMO_COD_PINCODE
 	) {
 
-		codInput.checked =
-			false;
+		/* COD area: COD enabled, WhatsApp greyed out. */
+		setOptionState(
+			codOpt,
+			codRadio,
+			false
+		);
 
-		onlineInput.checked =
+		setOptionState(
+			waOpt,
+			waRadio,
+			true
+		);
+
+		codRadio.checked =
 			true;
+
+		message.textContent =
+			"\u2713 COD available for pincode 630702";
+
+		message.classList.remove("mode-na");
+		message.classList.add("mode-ok");
+		message.style.display = "block";
+
+		button.textContent = "Place Order \u2192";
+
+		return;
 	}
+
+
+	/* Other areas: WhatsApp enabled, COD greyed out. */
+	setOptionState(
+		codOpt,
+		codRadio,
+		true
+	);
+
+	setOptionState(
+		waOpt,
+		waRadio,
+		false
+	);
+
+	waRadio.checked =
+		true;
+
+	message.textContent =
+		"COD not available for this pincode \u2014 please order via WhatsApp";
+
+	message.classList.remove("mode-ok");
+	message.classList.add("mode-na");
+	message.style.display = "block";
+
+	button.textContent = "Place Order \u2192";
 }
 
 
@@ -6585,16 +7265,43 @@ document.addEventListener(
 
 			pincodeField.addEventListener(
 				"input",
-				updateCodAvailability
+				updateOrderMode
 			);
 
 			pincodeField.addEventListener(
 				"change",
-				updateCodAvailability
+				updateOrderMode
 			);
 		}
 
+
+		/* Clear the validation warning as soon as
+		   the user starts fixing any checkout field. */
+		[
+			"checkoutName",
+			"checkoutMobile",
+			"checkoutAddress",
+			"checkoutCity",
+			"checkoutPincode"
+		].forEach(
+			(
+				fieldId
+			) => {
+
+				const field =
+					document.getElementById(
+						fieldId
+					);
+
+				if (field) {
+
+					field.addEventListener(
+						"input",
+						clearCheckoutStatus
+					);
+				}
+			}
+		);
+
 	}
 );
-
-
