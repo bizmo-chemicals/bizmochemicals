@@ -1,19 +1,25 @@
-BIZMO CHEMICALS WEBSITE
-========================
-Open index.html in Acode or any browser.
+BIZMO CHEMICALS — FINAL PRODUCTION FILES
+=========================================
 
-PRICE EDITING
--------------
-All editable website prices currently use the special marker: ✦
-Search for "✦" in index.html to quickly find and change prices.
+Upload these to your web host (GitHub Pages) replacing the old files:
+- index.html  (the website)
+- style.css   (styles)
+- script.js   (logic)
 
-FILES
------
-index.html  - page structure/content
-style.css   - complete responsive design
-script.js   - cart, search, mobile menu and newsletter interactions
-assets/     - your supplied Bizmo logo, individual products, hero, 5L pack and combo pack
+Keep your assets/ folder as-is.
 
-NOTE
-----
-The product images are the images supplied in the conversation and are used as website assets.
+BACKEND (already installed)
+- BizmoOrderSystem-COMPLETE-v6.js is the full Apps Script code
+  currently running in your bizmochemicalsily@gmail.com account.
+  No action needed unless you need to reinstall.
+
+BACKEND URL (for reference)
+https://script.google.com/macros/s/AKfycby_AQMbH9dFbgNmpDoFK4X4azUi_1Z7ZnY80UBpg0zM5HI8oqXaag_176UGJWpP5jw/exec
+
+WHAT'S INCLUDED
+- COD checkout (630702) with loading spinner, 59s cooldown,
+  server-generated timestamped order IDs
+- WhatsApp order flow with lead logging (Online/Pending)
+- Email alerts for BOTH COD orders and WhatsApp leads
+- Toast-style warnings, slim availability notes
+- All abuse protection (3/day per phone, duplicate detection)
