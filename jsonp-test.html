@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bizmo Connection Test</title>
+<style>
+body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+button { font-size: 18px; padding: 14px 24px; margin: 10px 0; display: block; width: 100%; }
+#log { background: #f0f0f0; padding: 12px; border-radius: 8px; white-space: pre-wrap; word-break: break-all; font-size: 13px; margin-top: 16px; min-height: 120px; }
+.ok { color: green; font-weight: bold; }
+.fail { color: red; font-weight: bold; }
+</style>
+</head>
+<body>
+<h2>Bizmo Connection Test</h2>
+<p>This tests the exact connection your checkout uses. Tap each button and watch what happens.</p>
+<button id="b1">Test 1: Simple backend ping</button>
+<button id="b2">Test 2: Full order via script tag (like checkout)</button>
+<div id="log">Waiting...</div>
+<script>
+var API = "https://script.google.com/macros/s/AKfycby_AQMbH9dFbgNmpDoFK4X4azUi_1Z7ZnY80UBpg0zM5HI8oqXaag_176UGJWpP5jw/exec";
+var logEl = document.getElementById("log");
+function log(m, cls) {
+  var d = document.createElement("div");
+  if (cls) d.className = cls;
+  d.textContent = new Date().toLocaleTimeString() + " " + m;
+  logEl.appendChild(d);
+}
+document.getElementById("b1").onclick = function() {
+  log("Test 1: requesting ping...");
+  var cb = "t1_" + Date.now();
+  window[cb] = function(data) {
+    log("Test 1 RESULT: " + JSON.stringify(data), data && data.ok === false ? "ok" : "fail");
+    delete window[cb];
+  };
+  var s = document.createElement("script");
+  var t0 = Date.now();
+  s.onerror = function() { log("Test 1 SCRIPT ERROR after " + (Date.now()-t0) + "ms", "fail"); };
+  setTimeout(function() {
+    if (window[cb]) { log("Test 1 TIMEOUT after 25s - no reply", "fail"); delete window[cb]; }
+  }, 25000);
+  s.src = API + "?action=placeCodOrder&callback=" + cb + "&payload=%7B%7D";
+  log("Test 1 URL: " + s.src.substring(0, 100) + "...");
+  document.head.appendChild(s);
+};
+document.getElementById("b2").onclick = function() {
+  log("Test 2: sending realistic order...");
+  var payload = {
+    name: "ConnTest", mobile: "9876543210",
+    address: "123 Main St", city: "Ilayangudi", pincode: "630702",
+    items: "Test Item x 1 - Rs.100", total: 100, payment: "Cash on Delivery"
+  };
+  var cb = "t2_" + Date.now();
+  window[cb] = function(data) {
+    log("Test 2 RESULT: " + JSON.stringify(data), data && data.ok ? "ok" : "fail");
+    delete window[cb];
+  };
+  var s = document.createElement("script");
+  var t0 = Date.now();
+  s.onerror = function() { log("Test 2 SCRIPT ERROR after " + (Date.now()-t0) + "ms", "fail"); };
+  setTimeout(function() {
+    if (window[cb]) { log("Test 2 TIMEOUT after 25s - no reply", "fail"); delete window[cb]; }
+  }, 25000);
+  s.src = API + "?action=placeCodOrder&callback=" + cb + "&payload=" + encodeURIComponent(JSON.stringify(payload));
+  log("Test 2 URL length: " + s.src.length);
+  document.head.appendChild(s);
+};
+log("Page loaded. Tap Test 1 first.");
+</script>
+</body>
+</html>
