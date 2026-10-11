@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Noto+Sans+Tamil:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=10">
+    <link rel="stylesheet" href="style.css?v=final">
   </head>
 
   <body>
@@ -2076,73 +2076,67 @@
 
         <div class="checkout-section">
 
-  <h3>Payment Method</h3>
+  <h3>Order Method</h3>
 
   <div class="payment-options">
 
-    <!-- CASH ON DELIVERY -->
-    <label class="payment-option" id="codOption">
-
+    <label
+      class="payment-option"
+      id="codOption"
+    >
       <input
         type="radio"
-        name="paymentMethod"
-        value="Cash on Delivery"
-        id="codPayment"
+        name="orderMethod"
+        value="cod"
+        id="codRadio"
         checked
-      >
-
-      <span>
-
-        <strong>
-          Cash on Delivery
-        </strong>
-
-        <small>
-          Pay when your order is delivered.
-        </small>
-
+      />
+      <span class="payment-option-text">
+        <strong>Cash on Delivery</strong>
+        <small>Pay in cash when your order arrives. Available only for pincode 630702.</small>
       </span>
-
     </label>
 
-    <!-- ONLINE PAYMENT -->
-    <label class="payment-option" id="onlineOption">
-
+    <label
+      class="payment-option"
+      id="waOption"
+    >
       <input
         type="radio"
-        name="paymentMethod"
-        value="Online Payment"
-        id="onlinePayment"
-      >
-
-      <span>
-
-        <strong>
-          UPI / Online Payment
-        </strong>
-
-        <small>
-          Online payment option.
-        </small>
-
+        name="orderMethod"
+        value="whatsapp"
+        id="waRadio"
+      />
+      <span class="payment-option-text">
+        <strong>Order through WhatsApp</strong>
+        <small>Our team confirms the final price for your location on WhatsApp.</small>
       </span>
-
     </label>
 
   </div>
 
   <p
-    id="codRestrictionMessage"
+    id="orderModeMessage"
     class="checkout-message"
     style="display:none;"
+  ></p>
+
+  <!-- Honeypot: invisible to humans, bots fill it and get rejected -->
+  <input
+    type="text"
+    id="checkoutCompany"
+    name="company"
+    tabindex="-1"
+    autocomplete="off"
+    aria-hidden="true"
+    style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0;"
   >
-    Cash on Delivery is not available for your pincode. Online mode selected.
-  </p>
 
 </div>
 
         <button
           class="place-order-btn"
+          id="placeOrderBtn"
           onclick="placeOrder()"
         >
           Place Order →
@@ -2165,7 +2159,7 @@
       Added to cart ✓
     </div>
 
-    <script src="script.js?v=10"></script>
+    <script src="script.js?v=final"></script>
 <!-- BACK TO TOP -->
 <button
   id="backToTop"
