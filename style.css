@@ -2359,6 +2359,256 @@ footer {
   box-shadow: 0 12px 30px rgba(166, 129, 61, 0.4);
 }
 
+/* ================= MY ORDERS ================= */
+
+.myorders-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  background: rgba(43, 26, 86, 0.55);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  z-index: 130;
+}
+
+.myorders-modal.show {
+  display: flex;
+  animation: overlayFade 0.28s ease;
+}
+
+.myorders-box {
+  width: 100%;
+  max-width: 530px;
+  margin: auto;
+  max-height: 92vh;
+  max-height: 92dvh;
+  overflow-y: auto;
+  background: #fffdf9;
+  border: 1px solid var(--lavender-line);
+  border-radius: var(--radius-lg);
+  padding: 30px;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 34px 90px rgba(43, 26, 86, 0.35);
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.myorders-modal.show .myorders-box {
+  animation: popRise 0.42s cubic-bezier(0.22, 1.15, 0.36, 1);
+}
+
+.myorders-box::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 30px;
+  right: 30px;
+  height: 4px;
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(90deg, var(--gold), var(--violet-bright), var(--gold));
+}
+
+.myorders-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(43, 26, 86, 0.07);
+  color: #2b1a56;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.myorders-header {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.myorders-header h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  color: #2b1a56;
+  margin: 6px 0;
+}
+
+.myorders-header p {
+  font-size: 14px;
+  color: #6b6480;
+}
+
+.myorders-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2b1a56;
+  margin: 14px 0 6px;
+}
+
+.myorders-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--lavender-line);
+  border-radius: 10px;
+  font-size: 15px;
+  background: #fff;
+  color: #2b1a56;
+  outline: none;
+}
+
+.myorders-input:focus {
+  border-color: var(--violet-bright);
+  box-shadow: 0 0 0 3px rgba(107, 92, 165, 0.15);
+}
+
+.myorders-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #6b5ca5, #4a3f6b);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.myorders-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.myorders-result {
+  margin-top: 8px;
+}
+
+.myorders-card {
+  background: #f8f6ff;
+  border: 1px solid var(--lavender-line);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.myorders-status {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.myorders-status.confirmed {
+  background: #e6f7e6;
+  color: #1e7d32;
+}
+
+.myorders-status.pending {
+  background: #fff3d6;
+  color: #9a6b00;
+}
+
+.myorders-status.delivered {
+  background: #e3ecff;
+  color: #24478f;
+}
+
+.myorders-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px dashed #e2ddf2;
+  font-size: 14px;
+}
+
+.myorders-row:last-child {
+  border-bottom: none;
+}
+
+.myorders-row .k {
+  color: #6b6480;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.myorders-row .v {
+  color: #2b1a56;
+  text-align: right;
+  word-break: break-word;
+}
+
+.myorders-items {
+  white-space: pre-line;
+  font-size: 13px;
+}
+
+.myorders-back {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 10px;
+  border: 1.5px solid var(--lavender-line);
+  border-radius: 30px;
+  background: transparent;
+  color: #4a3f6b;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.myorders-copy {
+  border: 1px solid var(--lavender-line);
+  background: #fff;
+  border-radius: 8px;
+  padding: 3px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.myorders-copy:active {
+  transform: scale(0.92);
+}
+
+/* WhatsApp thank-you — reference ID loading state */
+.bizmo-thanks-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px;
+  margin: 8px 0;
+  background: #f6f3ff;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #6b6480;
+}
+
+.bizmo-spinner-dark {
+  border: 2px solid rgba(107, 92, 165, 0.25);
+  border-top-color: #6b5ca5;
+  margin-right: 0;
+  vertical-align: 0;
+}
+
+.myorders-error {
+  text-align: center;
+  padding: 24px 10px;
+  color: #6b6480;
+  font-size: 14px;
+}
+
 /* ================= TOAST ================= */
 
 .toast {
