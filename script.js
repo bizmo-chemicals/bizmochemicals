@@ -69,6 +69,16 @@ function updatePageScrollLock() {
 			.getElementById("bizmoOrderSuccess")
 			?.classList.contains("show");
 
+	const myOrdersOpen =
+		document
+			.getElementById("myOrdersModal")
+			?.classList.contains("show");
+
+	const whatsappThanksOpen =
+		document
+			.getElementById("bizmoWhatsappThanks")
+			?.classList.contains("show");
+
 	if (
 		menuOpen ||
 		cartOpen ||
@@ -76,7 +86,9 @@ function updatePageScrollLock() {
 		checkoutOpen ||
 		orderConfirmOpen ||
 		editConfirmOpen ||
-		successOpen
+		successOpen ||
+		myOrdersOpen ||
+		whatsappThanksOpen
 	) {
 		lockPageScroll();
 	} else {
@@ -1969,6 +1981,227 @@ function closeCheckout() {
 }
 
 
+/* =========================
+   MY ORDERS — TRACK POPUP
+========================= */
+
+function openMyOrders() {
+
+	/* close the hamburger menu if open */
+	const menu = document.getElementById("navMenu");
+	if (menu) menu.classList.remove("show");
+	const burger = document.querySelector(".mobile-menu");
+	if (burger) burger.classList.remove("menu-open");
+
+	const modal = document.getElementById("myOrdersModal");
+	if (!modal) return;
+
+	/* reset to fresh form state */
+	document.getElementById("myOrdersForm").style.display = "";
+	document.getElementById("myOrdersResult").style.display = "none";
+	document.getElementById("myOrdersResult").innerHTML = "";
+	document.getElementById("myOrdersBackBtn").style.display = "none";
+	document.getElementById("myOrderId").value = "";
+	document.getElementById("myOrderMobile").value = "";
+
+	modal.classList.add("show");
+	updatePageScrollLock();
+
+	setTimeout(() => {
+		document.getElementById("myOrderId")?.focus();
+	}, 350);
+}
+
+
+function closeMyOrders() {
+
+	document
+		.getElementById("myOrdersModal")
+		?.classList.remove("show");
+
+	updatePageScrollLock();
+}
+
+
+function myOrdersBack() {
+
+	document.getElementById("myOrdersForm").style.display = "";
+	document.getElementById("myOrdersResult").style.display = "none";
+	document.getElementById("myOrdersResult").innerHTML = "";
+	document.getElementById("myOrdersBackBtn").style.display = "none";
+}
+
+
+function bizmoEscapeHtml(s) {
+
+	return String(s == null ? "" : s)
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;");
+}
+
+
+function trackMyOrder() {
+
+	const orderIdInput = document.getElementById("myOrderId");
+	const mobileInput = document.getElementById("myOrderMobile");
+	const trackBtn = document.getElementById("myOrderTrackBtn");
+	const resultBox = document.getElementById("myOrdersResult");
+
+	const orderId = (orderIdInput.value || "").trim();
+	const mobile = (mobileInput.value || "").trim();
+
+	if (!orderId) {
+		showToast("Please enter your Order ID.");
+		orderIdInput.focus();
+		return;
+	}
+
+	if (!/^[6-9]\d{9}$/.test(mobile)) {
+		showToast("Please enter the 10-digit mobile number used at checkout.");
+		mobileInput.focus();
+		return;
+	}
+
+	trackBtn.disabled = true;
+	trackBtn.textContent = "Tracking…";
+
+	bizmoJsonp(
+		BIZMO_ORDER_API_URL,
+		{
+			action: "getOrder",
+			orderId: orderId,
+			mobile: mobile
+		},
+		(result) => {
+
+			trackBtn.disabled = false;
+			trackBtn.textContent = "Track Order";
+
+			if (result && result.ok && result.order) {
+				myOrdersShowResult(result.order);
+			} else {
+				document.getElementById("myOrdersForm").style.display = "none";
+				resultBox.style.display = "";
+				document.getElementById("myOrdersBackBtn").style.display = "";
+				resultBox.innerHTML =
+					'<div class="myorders-error">' +
+					'<div style="font-size:40px;margin-bottom:10px;">&#x1F50D;</div>' +
+					"<p><b>No order found.</b></p>" +
+					"<p>Please check your Order ID and mobile number and try again.</p>" +
+					"</div>";
+			}
+		},
+		30000
+	);
+}
+
+
+function myOrdersShowResult(o) {
+
+	const statusRaw = (o.status || "Confirmed").trim();
+	const statusLower = statusRaw.toLowerCase();
+	let statusClass = "confirmed";
+	if (statusLower.includes("pend")) statusClass = "pending";
+	else if (statusLower.includes("deliver")) statusClass = "delivered";
+	else if (statusLower.includes("cancel")) statusClass = "pending";
+
+	const itemsHtml = bizmoEscapeHtml(o.items).replace(/, /g, ",\n");
+
+	document.getElementById("myOrdersForm").style.display = "none";
+
+	const resultBox = document.getElementById("myOrdersResult");
+	resultBox.style.display = "";
+	document.getElementById("myOrdersBackBtn").style.display = "";
+
+	resultBox.innerHTML =
+		'<div class="myorders-card">' +
+		'<span class="myorders-status ' + statusClass + '">' +
+		bizmoEscapeHtml(statusRaw) +
+		"</span>" +
+		'<div class="myorders-row"><span class="k">Order ID</span>' +
+		'<span class="v"><span id="myOrdersCopyId">' +
+		bizmoEscapeHtml(o.orderId) +
+		'</span> <button type="button" class="myorders-copy" ' +
+		'onclick="myOrdersCopyId()" aria-label="Copy Order ID">\uD83D\uDCCB</button></span></div>' +
+		myOrdersRow("Date", o.date + (o.time ? " · " + o.time : "")) +
+		myOrdersRow("Name", o.name) +
+		myOrdersRow("Mobile", o.mobile) +
+		myOrdersRow(
+			"Address",
+			o.address + (o.city ? ", " + o.city : "") +
+			(o.pincode ? " - " + o.pincode : "")
+		) +
+		'<div class="myorders-row"><span class="k">Products</span>' +
+		'<span class="v myorders-items">' + itemsHtml + "</span></div>" +
+		myOrdersRow("Total", "₹" + o.total) +
+		myOrdersRow("Payment", o.payment) +
+		"</div>";
+}
+
+
+function myOrdersRow(k, v) {
+
+	return (
+		'<div class="myorders-row"><span class="k">' +
+		bizmoEscapeHtml(k) +
+		'</span><span class="v">' +
+		bizmoEscapeHtml(v) +
+		"</span></div>"
+	);
+}
+
+
+function myOrdersCopyId() {
+
+	const el = document.getElementById("myOrdersCopyId");
+	const text = el ? el.textContent.trim() : "";
+	if (!text) return;
+
+	const done = () => showToast("Order ID copied!");
+
+	if (navigator.clipboard && navigator.clipboard.writeText) {
+		navigator.clipboard.writeText(text).then(done).catch(() => myOrdersCopyFallback(text, done));
+	} else {
+		myOrdersCopyFallback(text, done);
+	}
+}
+
+
+function myOrdersCopyFallback(text, done) {
+
+	try {
+		const ta = document.createElement("textarea");
+		ta.value = text;
+		ta.style.position = "fixed";
+		ta.style.opacity = "0";
+		document.body.appendChild(ta);
+		ta.select();
+		document.execCommand("copy");
+		document.body.removeChild(ta);
+		done();
+	} catch (e) {}
+}
+
+
+/* Generic copy for Order ID on success popups */
+function bizmoCopyOrderId(elId) {
+
+	const el = document.getElementById(elId);
+	const text = el ? el.textContent.trim() : "";
+	if (!text || text === "-") return;
+
+	const done = () => showToast("Order ID copied!");
+
+	if (navigator.clipboard && navigator.clipboard.writeText) {
+		navigator.clipboard.writeText(text).then(done).catch(() => myOrdersCopyFallback(text, done));
+	} else {
+		myOrdersCopyFallback(text, done);
+	}
+}
+
+
 function renderCheckoutItems() {
 
 	const box =
@@ -3052,7 +3285,63 @@ function handleWhatsappYes() {
 					payload:
 						raw
 				},
-				() => {},
+				(result) => {
+
+					/* show the server-generated reference ID
+					   in the thank-you popup */
+					const loadingEl =
+						document.getElementById(
+							"bizmoThanksLoading"
+						);
+
+					if (
+						result &&
+						result.ok &&
+						result.orderId
+					) {
+
+						if (loadingEl) {
+							loadingEl.style.display = "none";
+						}
+
+						const idEl =
+							document.getElementById(
+								"bizmoThanksOrderId"
+							);
+
+						if (idEl) {
+
+							idEl.textContent =
+								result.orderId;
+						}
+
+						const wrapEl =
+							document.getElementById(
+								"bizmoThanksOrderIdWrap"
+							);
+
+						if (wrapEl) {
+
+							wrapEl.style.display =
+								"";
+						}
+					} else {
+
+						/* server failed/timed out — stop spinner, hide section */
+						if (loadingEl) {
+							loadingEl.style.display = "none";
+						}
+
+						const labelEl =
+							document.getElementById(
+								"bizmoThanksOrderLabel"
+							);
+
+						if (labelEl) {
+							labelEl.style.display = "none";
+						}
+					}
+				},
 				30000
 			);
 		}
@@ -3156,6 +3445,10 @@ function ensureBizmoWhatsappThanks() {
 		'<div class="bizmo-success-icon">\u2713</div>' +
 		"<h2>Thank You!</h2>" +
 		"<p>Your order request has been noted.<br>The Bizmo team will contact you on WhatsApp shortly to confirm the final price and delivery.</p>" +
+		'<div class="bizmo-success-order-label" id="bizmoThanksOrderLabel">Your Reference ID</div>' +
+		'<div class="bizmo-thanks-loading" id="bizmoThanksLoading"><span class="bizmo-btn-spinner bizmo-spinner-dark"></span> Generating your reference ID\u2026</div>' +
+		'<div class="bizmo-success-order-id" style="display:none" id="bizmoThanksOrderIdWrap"><span id="bizmoThanksOrderId">-</span> <button type="button" class="myorders-copy" onclick="bizmoCopyOrderId(\'bizmoThanksOrderId\')" aria-label="Copy Reference ID">\uD83D\uDCCB</button></div>' +
+		'<p class="bizmo-success-note">Save this Reference ID to track your order from the <b>My Orders</b> menu.</p>' +
 		'<button type="button" class="bizmo-order-btn primary" id="bizmoThanksCloseBtn">Continue Shopping</button>' +
 		"</div></div>";
 
@@ -3185,6 +3478,19 @@ function showBizmoWhatsappThanks() {
 	if (!popup) {
 		return;
 	}
+
+
+	/* hide the reference ID until the server reply arrives */
+	const thanksIdEl = document.getElementById("bizmoThanksOrderId");
+	if (thanksIdEl) { thanksIdEl.textContent = "-"; }
+	const thanksWrapEl = document.getElementById("bizmoThanksOrderIdWrap");
+	if (thanksWrapEl) { thanksWrapEl.style.display = "none"; }
+	const thanksLoadingEl = document.getElementById("bizmoThanksLoading");
+	if (thanksLoadingEl) { thanksLoadingEl.style.display = ""; }
+	const thanksLabelEl2 = document.getElementById("bizmoThanksOrderLabel");
+	if (thanksLabelEl2) { thanksLabelEl2.style.display = ""; }
+	const thanksLabelEl = document.getElementById("bizmoThanksOrderLabel");
+	if (thanksLabelEl) { thanksLabelEl.style.display = "none"; }
 
 
 	popup.classList.add(
@@ -3556,9 +3862,14 @@ function ensureBizmoSuccessPopup() {
 
 				<div
 					class="bizmo-success-order-id"
-					id="bizmoSuccessOrderId"
 				>
-					-
+					<span id="bizmoSuccessOrderId">-</span>
+					<button
+						type="button"
+						class="myorders-copy"
+						onclick="bizmoCopyOrderId('bizmoSuccessOrderId')"
+						aria-label="Copy Order ID"
+					>\uD83D\uDCCB</button>
 				</div>
 
 				<p class="bizmo-success-note">
