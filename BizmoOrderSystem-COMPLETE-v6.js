@@ -1,5 +1,5 @@
 /******************************************************************
- * BIZMO ORDER SYSTEM — COMPLETE Code.gs (v6)
+ * BIZMO ORDER SYSTEM — COMPLETE Code.gs (v8)
  *
  * Paste this ENTIRE file into your new Apps Script project
  * (bizmochemicalsily@gmail.com), replacing everything.
@@ -11,6 +11,7 @@
  *  - generateOrderId (sequential, with timestamped website IDs)
  *  - getOrderSheet, saveOrder
  *  - Email alerts for COD orders AND WhatsApp leads
+ *  - My Orders lookup (getOrder action)
  *
  * AFTER PASTING:
  *  1. Deploy → New deployment → Web app
@@ -29,6 +30,7 @@ function doGet(e) {
   const action = (e && e.parameter && e.parameter.action) || "";
   if (action === "placeCodOrder")   return bizmoPlaceCodOrder(e);
   if (action === "logWhatsappLead") return bizmoLogWhatsappLead(e);
+  if (action === "getOrder")        return bizmoGetOrder(e);
   return ContentService
     .createTextOutput("Bizmo Order API is running")
     .setMimeType(ContentService.MimeType.TEXT);
@@ -350,7 +352,72 @@ function bizmoLogWhatsappLead(e) {
     );
   } catch (err) {}
 
-  return bizmoJsonpReply(e, { ok: true });
+  return bizmoJsonpReply(e, { ok: true, orderId: orderId });
+}
+
+/* Format a sheet cell: Date objects -> readable string, else trimmed string */
+function bizmoFmtCell(v, fmt) {
+  try {
+    if (Object.prototype.toString.call(v) === "[object Date]" && !isNaN(v.getTime())) {
+      return Utilities.formatDate(v, BIZMO_TIMEZONE, fmt || "dd-MM-yyyy");
+    }
+  } catch (e) {}
+  return String(v == null ? "" : v).trim();
+}
+
+/* ---- My Orders lookup: orderId + mobile must match ---- */
+function bizmoGetOrder(e) {
+  const orderId = String((e.parameter && e.parameter.orderId) || "").trim();
+  const mobile  = String((e.parameter && e.parameter.mobile) || "").trim();
+
+  if (!orderId || !/^[6-9]\d{9}$/.test(mobile)) {
+    return bizmoJsonpReply(e, { ok: false, reason: "invalid" });
+  }
+
+  let sheet;
+  try { sheet = getOrderSheet(); }
+  catch (err) { return bizmoJsonpReply(e, { ok: false, reason: "server_error" }); }
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) {
+    return bizmoJsonpReply(e, { ok: false, reason: "not_found" });
+  }
+
+  /* Columns: 1=orderId 2=date 3=time 4=name 5=mobile 6=address
+     7=city 8=pincode 9=items 10=total 11=payment 12=status */
+  const lastCol = sheet.getLastColumn();
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  let statusCol = 12;
+  for (let i = 0; i < headers.length; i++) {
+    if (String(headers[i]).trim().toLowerCase() === "status") { statusCol = i + 1; break; }
+  }
+  const width = Math.max(12, statusCol);
+  const rows = sheet.getRange(2, 1, lastRow - 1, width).getValues();
+
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r];
+    if (String(row[0]).trim() === orderId &&
+        String(row[4]).trim() === mobile) {
+      return bizmoJsonpReply(e, {
+        ok: true,
+        order: {
+          orderId: bizmoFmtCell(row[0]),
+          date: bizmoFmtCell(row[1], "dd-MM-yyyy"),
+          time: bizmoFmtCell(row[2], "HH:mm:ss"),
+          name: bizmoFmtCell(row[3]),
+          mobile: bizmoFmtCell(row[4]),
+          address: bizmoFmtCell(row[5]),
+          city: bizmoFmtCell(row[6]),
+          pincode: bizmoFmtCell(row[7]),
+          items: String(row[8] == null ? "" : row[8]),
+          total: Number(row[9]) || 0,
+          payment: bizmoFmtCell(row[10]),
+          status: bizmoFmtCell(row[statusCol - 1]) || "Confirmed"
+        }
+      });
+    }
+  }
+  return bizmoJsonpReply(e, { ok: false, reason: "not_found" });
 }
 
 /* ---- Run once to authorize Gmail ---- */
